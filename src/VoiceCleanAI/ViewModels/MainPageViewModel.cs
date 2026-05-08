@@ -5,12 +5,14 @@ using VoiceCleanAI.Core.Models;
 using VoiceCleanAI.Backend;
 using VoiceCleanAI.Services;
 using ModelTaskStatus = VoiceCleanAI.Core.Models.TaskStatus;
+using System.IO;
 
 namespace VoiceCleanAI.ViewModels;
 
 public partial class MainPageViewModel : ObservableObject
 {
-    private readonly BackendWorkerService _backendWorker;
+    private readonly OnnxInferenceService _onnxService;
+    private readonly ModelDownloadService _downloadService;
     private readonly InferenceManager _inferenceManager;
     private readonly HardwareService _hardwareService;
     private readonly LogService _logService;
@@ -28,7 +30,10 @@ public partial class MainPageViewModel : ObservableObject
     public partial HardwareInfo? CurrentHardware { get; set; }
 
     [ObservableProperty]
-    public partial string HardwareStatusText { get; set; } = "ハードウェアを診断中...";
+    public partial string HardwareStatusText { get; set; } = "ハードウェアを診断中... (Diagnosing hardware...)";
+
+    [ObservableProperty]
+    public partial string StatusText { get; set; } = string.Empty;
 
     [ObservableProperty]
     public partial ProcessingPreset? SelectedPreset { get; set; }
@@ -49,6 +54,15 @@ public partial class MainPageViewModel : ObservableObject
     [ObservableProperty]
     public partial string SelectedEncoder { get; set; } = "Auto";
 
+    [ObservableProperty]
+    public partial bool AutoOpenFolder { get; set; } = true;
+
+    [ObservableProperty]
+    public partial int OutputDirectoryMode { get; set; } = 0; // 0: Original, 1: Specific
+
+    [ObservableProperty]
+    public partial string SelectedOutputDirectory { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
+
     public ObservableCollection<TaskViewModel> Tasks { get; } = new();
     public ObservableCollection<ProcessingPreset> Presets { get; } = new();
     public ObservableCollection<string> Encoders { get; } = new() { "Auto", "NVENC (NVIDIA)", "QSV (Intel)", "AMF (AMD)", "libx264 (CPU)" };
@@ -58,10 +72,12 @@ public partial class MainPageViewModel : ObservableObject
         _logService = new LogService();
         _logService.Log("VoiceClean AI started.");
 
-        string scriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backend", "main.py");
-        _backendWorker = new BackendWorkerService(scriptPath);
-        _inferenceManager = new InferenceManager(_backendWorker, _logService);
-        _hardwareService = new HardwareService(scriptPath);
+        string modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Models");
+        _onnxService = new OnnxInferenceService(modelPath, _logService);
+        _downloadService = new ModelDownloadService(modelPath, _logService);
+        _inferenceManager = new InferenceManager(_onnxService, _logService);
+        
+        _hardwareService = new HardwareService();
 
         _inferenceManager.ProcessingStateChanged += (s, processing) => IsProcessing = processing;
         _inferenceManager.GlobalProgressChanged += (s, progress) => GlobalProgress = progress;
@@ -99,7 +115,42 @@ public partial class MainPageViewModel : ObservableObject
     [RelayCommand]
     private async Task StartAll()
     {
+        _logService.Log($"StartAll triggered. Task count: {Tasks.Count}");
         if (Tasks.Count == 0) return;
+
+        // モデルの存在チェック
+        if (!_downloadService.AreModelsAvailable())
+        {
+            _logService.Log("Models are missing. Requesting download via dialog.");
+            
+            bool shouldDownload = await ShowDownloadConfirmationAsync();
+            if (shouldDownload)
+            {
+                _logService.Log("Transitioning to download state...");
+                IsProcessing = true;
+                StatusText = "モデルをダウンロード中... (Downloading models...)";
+                
+                try
+                {
+                    var progress = new Progress<double>(p => GlobalProgress = p);
+                    await Task.Run(async () => await _downloadService.DownloadModelsAsync(progress));
+                    _logService.Log("DownloadModelsAsync completed successfully.");
+                    StatusText = "ダウンロード完了 (Download completed)";
+                }
+                catch (Exception ex)
+                {
+                    _logService.Log($"CRITICAL: Download failed: {ex}", "ERROR");
+                    StatusText = $"失敗 (Failed): {ex.Message}";
+                    IsProcessing = false;
+                    return;
+                }
+            }
+            else
+            {
+                _logService.Log("User declined download.");
+                return;
+            }
+        }
         
         ProcessingPreset effectiveSettings;
         if (IsAdvancedMode)
@@ -118,8 +169,27 @@ public partial class MainPageViewModel : ObservableObject
         }
 
         _logService.Log($"Starting processing with preset: {effectiveSettings.Name} (Lambd={effectiveSettings.Lambd}, Tau={effectiveSettings.Tau}, Nfe={effectiveSettings.Nfe}, Encoder={SelectedEncoder})");
-        _inferenceManager.EnqueueTasks(Tasks, effectiveSettings);
+        
+        _inferenceManager.AutoOpenFolder = AutoOpenFolder;
+        _inferenceManager.EnqueueTasks(Tasks, effectiveSettings, OutputDirectoryMode, SelectedOutputDirectory);
         await _inferenceManager.StartProcessingAsync();
+    }
+
+    [RelayCommand]
+    private async Task PickOutputDirectory()
+    {
+        var picker = new Windows.Storage.Pickers.FolderPicker();
+        picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.MusicLibrary;
+        picker.FileTypeFilter.Add("*");
+
+        IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
+        WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+
+        var folder = await picker.PickSingleFolderAsync();
+        if (folder != null)
+        {
+            SelectedOutputDirectory = folder.Path;
+        }
     }
 
     [RelayCommand]
@@ -133,9 +203,23 @@ public partial class MainPageViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void ClearAll() => Tasks.Clear();
+
+    [RelayCommand]
     private void ExportLogs()
     {
         string desktopPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "VoiceCleanAI_Log.txt");
         _logService.ExportLogs(desktopPath);
+    }
+
+    public Func<Task<bool>>? RequestDownloadConfirmation { get; set; }
+
+    private async Task<bool> ShowDownloadConfirmationAsync()
+    {
+        if (RequestDownloadConfirmation != null)
+        {
+            return await RequestDownloadConfirmation();
+        }
+        return false;
     }
 }

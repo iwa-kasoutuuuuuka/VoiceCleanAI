@@ -6,6 +6,7 @@ namespace VoiceCleanAI.ViewModels;
 
 public partial class TaskViewModel : ObservableObject
 {
+    public AudioTask Model => _model;
     private readonly AudioTask _model;
 
     public TaskViewModel(AudioTask model)
@@ -21,6 +22,8 @@ public partial class TaskViewModel : ObservableObject
     public partial string FullFilePath { get; set; } = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsProcessing))]
+    [NotifyPropertyChangedFor(nameof(IsCompleted))]
     public partial ModelTaskStatus Status { get; set; }
 
     [ObservableProperty]
@@ -28,6 +31,12 @@ public partial class TaskViewModel : ObservableObject
 
     [ObservableProperty]
     public partial string StatusText { get; set; } = string.Empty;
+
+    public bool IsQueued => Status == ModelTaskStatus.Queued;
+    public bool IsProcessing => Status == ModelTaskStatus.Processing;
+    public bool IsCompleted => Status == ModelTaskStatus.Completed;
+    public bool IsFailed => Status == ModelTaskStatus.Failed;
+    public bool IsCancelled => Status == ModelTaskStatus.Cancelled;
 
     public void UpdateFromModel()
     {
@@ -37,12 +46,12 @@ public partial class TaskViewModel : ObservableObject
         ProgressValue = _model.Progress;
         StatusText = Status switch
         {
-            ModelTaskStatus.Queued => "待機中",
-            ModelTaskStatus.Processing => $"処理中 ({ProgressValue:P0})",
-            ModelTaskStatus.Completed => "完了",
-            ModelTaskStatus.Failed => "失敗",
-            ModelTaskStatus.Cancelled => "キャンセル済み",
-            _ => "不明"
+            ModelTaskStatus.Queued => "待機中 (Queued)",
+            ModelTaskStatus.Processing => $"処理中 (Processing... {ProgressValue:P0})",
+            ModelTaskStatus.Completed => "完了 (Completed)",
+            ModelTaskStatus.Failed => "失敗 (Failed)",
+            ModelTaskStatus.Cancelled => "キャンセル済み (Cancelled)",
+            _ => "不明 (Unknown)"
         };
     }
 }

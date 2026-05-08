@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using VoiceCleanAI.Core.Models;
 
@@ -8,16 +9,36 @@ namespace VoiceCleanAI.Backend;
 public class BackendWorkerService
 {
     private Process? _process;
-    private readonly string _pythonExecutable = "python"; // TODO: Configure path
+    private string _pythonExecutable = "python";
     private readonly string _scriptPath;
 
     public BackendWorkerService(string scriptPath)
     {
         _scriptPath = scriptPath;
+        FindPython();
+    }
+
+    private void FindPython()
+    {
+        // 1. アプリケーション直下の python フォルダを確認 (ポータブル構成)
+        string localPython = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "python", "python.exe");
+        if (File.Exists(localPython))
+        {
+            _pythonExecutable = localPython;
+            return;
+        }
+
+        // 2. PATH 上の python を確認
+        // デフォルトの "python" を使用
     }
 
     public async Task ProcessTaskAsync(AudioTask task, CancellationToken ct, IProgress<double> progress)
     {
+        if (!File.Exists(_scriptPath))
+        {
+            throw new FileNotFoundException($"バックエンドスクリプトが見つかりません: {_scriptPath}");
+        }
+
         var startInfo = new ProcessStartInfo
         {
             FileName = _pythonExecutable,
@@ -31,6 +52,8 @@ public class BackendWorkerService
         using var process = new Process { StartInfo = startInfo };
         _process = process;
 
+        var errorBuilder = new StringBuilder();
+
         process.OutputDataReceived += (s, e) =>
         {
             if (e.Data != null && e.Data.StartsWith("PROGRESS:"))
@@ -42,7 +65,23 @@ public class BackendWorkerService
             }
         };
 
-        process.Start();
+        process.ErrorDataReceived += (s, e) =>
+        {
+            if (e.Data != null)
+            {
+                errorBuilder.AppendLine(e.Data);
+            }
+        };
+
+        try
+        {
+            process.Start();
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            throw new Exception("Python が見つかりません。Python をインストールするか、アプリフォルダに python.exe を配置してください。");
+        }
+
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
 
@@ -52,7 +91,7 @@ public class BackendWorkerService
         }
         catch (OperationCanceledException)
         {
-            process.Kill(true);
+            if (!process.HasExited) process.Kill(true);
             throw;
         }
         finally
@@ -62,8 +101,9 @@ public class BackendWorkerService
 
         if (process.ExitCode != 0)
         {
-            var error = await process.StandardError.ReadToEndAsync();
-            throw new Exception($"Backend failed with exit code {process.ExitCode}: {error}");
+            string errorMsg = errorBuilder.ToString();
+            if (string.IsNullOrEmpty(errorMsg)) errorMsg = "Python プロセスが異常終了しました。";
+            throw new Exception($"Backend failed (Code {process.ExitCode}): {errorMsg}");
         }
     }
 }

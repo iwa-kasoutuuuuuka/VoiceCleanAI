@@ -1,125 +1,142 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using VoiceCleanAI.Core.Models;
-using VoiceCleanAI.ViewModels;
 using VoiceCleanAI.Services;
+using VoiceCleanAI.ViewModels;
 using ModelTaskStatus = VoiceCleanAI.Core.Models.TaskStatus;
 
 namespace VoiceCleanAI.Backend;
 
 public class InferenceManager
 {
-    private readonly BackendWorkerService _workerService;
+    private readonly OnnxInferenceService _onnxService;
     private readonly LogService _logService;
-    private readonly ConcurrentQueue<(TaskViewModel ViewModel, ProcessingPreset Preset)> _taskQueue = new();
+    private readonly ConcurrentQueue<TaskViewModel> _taskQueue = new();
     private CancellationTokenSource? _cts;
     private bool _isProcessing;
 
-    public event EventHandler<double>? GlobalProgressChanged;
     public event EventHandler<bool>? ProcessingStateChanged;
+    public event EventHandler<double>? GlobalProgressChanged;
 
-    public InferenceManager(BackendWorkerService workerService, LogService logService)
+    public InferenceManager(OnnxInferenceService onnxService, LogService logService)
     {
-        _workerService = workerService;
+        _onnxService = onnxService;
         _logService = logService;
     }
 
-    public void EnqueueTasks(IEnumerable<TaskViewModel> tasks, ProcessingPreset preset)
+    public void EnqueueTasks(IEnumerable<TaskViewModel> tasks, ProcessingPreset preset, int outputMode, string customDir)
     {
-        foreach (var task in tasks)
+        foreach (var taskViewModel in tasks)
         {
-            if (task.Status == ModelTaskStatus.Queued || task.Status == ModelTaskStatus.Failed)
+            if (taskViewModel.Status == ModelTaskStatus.Queued || taskViewModel.Status == ModelTaskStatus.Failed)
             {
-                task.Status = ModelTaskStatus.Queued;
-                task.UpdateFromModel();
-                _taskQueue.Enqueue((task, preset));
+                taskViewModel.Status = ModelTaskStatus.Queued;
+                taskViewModel.Model.ErrorMessage = string.Empty;
+                taskViewModel.ProgressValue = 0;
+                
+                // プリセット値をタスクに適用
+                taskViewModel.Model.Lambd = (float)preset.Lambd;
+                taskViewModel.Model.Tau = (float)preset.Tau;
+                taskViewModel.Model.Nfe = preset.Nfe;
+
+                // 出力パスの設定
+                string fileName = Path.GetFileNameWithoutExtension(taskViewModel.Model.InputFilePath);
+                string ext = Path.GetExtension(taskViewModel.Model.InputFilePath);
+                
+                string targetDir;
+                if (outputMode == 1 && !string.IsNullOrEmpty(customDir))
+                {
+                    targetDir = customDir;
+                    if (!Directory.Exists(targetDir)) Directory.CreateDirectory(targetDir);
+                }
+                else
+                {
+                    targetDir = Path.GetDirectoryName(taskViewModel.Model.InputFilePath) ?? "";
+                }
+
+                taskViewModel.Model.OutputFilePath = Path.Combine(targetDir, $"{fileName}_clean{ext}");
+
+                _taskQueue.Enqueue(taskViewModel);
             }
         }
     }
 
+    public bool AutoOpenFolder { get; set; } = true;
+
     public async Task StartProcessingAsync()
     {
         if (_isProcessing) return;
-
         _isProcessing = true;
         ProcessingStateChanged?.Invoke(this, true);
+
         _cts = new CancellationTokenSource();
+        int totalTasks = _taskQueue.Count;
+        int completedTasks = 0;
+        string lastOutputFilePath = string.Empty;
 
         try
         {
-            int totalTasks = _taskQueue.Count;
-            int completedTasks = 0;
-
-            while (_taskQueue.TryDequeue(out var item))
+            while (_taskQueue.TryDequeue(out var taskViewModel))
             {
-                var taskViewModel = item.ViewModel;
-                var preset = item.Preset;
+                if (_cts.Token.IsCancellationRequested)
+                {
+                    taskViewModel.Status = ModelTaskStatus.Cancelled;
+                    continue;
+                }
 
-                if (_cts.Token.IsCancellationRequested) break;
-
-                taskViewModel.Status = ModelTaskStatus.Processing;
-                taskViewModel.UpdateFromModel();
                 _logService.Log($"Processing task: {taskViewModel.FileName}");
+                taskViewModel.Status = ModelTaskStatus.Processing;
 
                 try
                 {
-                    string inputPath = taskViewModel.FullFilePath;
-                    string outputDir = Path.GetDirectoryName(inputPath) ?? "";
-                    string fileName = Path.GetFileNameWithoutExtension(inputPath);
-                    string ext = Path.GetExtension(inputPath);
-                    string outputPath = Path.Combine(outputDir, $"{fileName}_clean{ext}");
-
-                    var audioTask = new AudioTask
-                    {
-                        InputFilePath = inputPath,
-                        OutputFilePath = outputPath,
-                        Lambd = preset.Lambd,
-                        Tau = preset.Tau,
-                        Nfe = preset.Nfe
-                    };
-
-                    var progressHandler = new Progress<double>(p =>
-                    {
+                    var progress = new Progress<double>(p => {
                         taskViewModel.ProgressValue = p;
-                        taskViewModel.UpdateFromModel();
+                        double totalProgress = (completedTasks + p) / totalTasks;
+                        GlobalProgressChanged?.Invoke(this, totalProgress);
                     });
 
-                    await _workerService.ProcessTaskAsync(audioTask, _cts.Token, progressHandler);
-
+                    await _onnxService.ProcessAsync(taskViewModel.Model, _cts.Token, progress);
+                    
+                    lastOutputFilePath = taskViewModel.Model.OutputFilePath;
                     taskViewModel.Status = ModelTaskStatus.Completed;
                     taskViewModel.ProgressValue = 1.0;
-                    _logService.Log($"Task completed successfully: {taskViewModel.FileName}");
-                }
-                catch (OperationCanceledException)
-                {
-                    taskViewModel.Status = ModelTaskStatus.Cancelled;
-                    _logService.Log($"Task cancelled: {taskViewModel.FileName}", "WARN");
                 }
                 catch (Exception ex)
                 {
-                    taskViewModel.Status = ModelTaskStatus.Failed;
-                    taskViewModel.StatusText = $"エラー: {ex.Message}";
                     _logService.Log($"Task failed: {taskViewModel.FileName} Error: {ex.Message}", "ERROR");
+                    taskViewModel.Status = ModelTaskStatus.Failed;
+                    taskViewModel.Model.ErrorMessage = ex.Message;
                 }
-                finally
-                {
-                    taskViewModel.UpdateFromModel();
-                    completedTasks++;
-                    GlobalProgressChanged?.Invoke(this, (double)completedTasks / totalTasks);
-                }
+
+                completedTasks++;
+                GlobalProgressChanged?.Invoke(this, (double)completedTasks / totalTasks);
             }
         }
         finally
         {
             _isProcessing = false;
             ProcessingStateChanged?.Invoke(this, false);
-            GlobalProgressChanged?.Invoke(this, 1.0);
             _logService.Log("Batch processing finished.");
+
+            // 完了時に最後のタスクのフォルダを開く (設定が有効な場合)
+            if (completedTasks > 0 && AutoOpenFolder)
+            {
+                try
+                {
+                    string? lastOutput = Path.GetDirectoryName(lastOutputFilePath);
+                    if (!string.IsNullOrEmpty(lastOutput) && Directory.Exists(lastOutput))
+                    {
+                        Process.Start("explorer.exe", lastOutput);
+                    }
+                }
+                catch { /* 無視 */ }
+            }
         }
     }
 
     public void Cancel()
     {
-        _logService.Log("Cancellation requested by user.");
         _cts?.Cancel();
+        _logService.Log("Processing cancelled by user.", "WARN");
     }
 }

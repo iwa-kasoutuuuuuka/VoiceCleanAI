@@ -7,13 +7,7 @@ namespace VoiceCleanAI.Backend;
 
 public class HardwareService
 {
-    private readonly string _pythonExecutable = "python";
-    private readonly string _scriptPath;
-
-    public HardwareService(string scriptPath)
-    {
-        _scriptPath = scriptPath;
-    }
+    public HardwareService(string? dummy = null) { }
 
     public async Task<HardwareInfo> GetHardwareInfoAsync()
     {
@@ -21,54 +15,40 @@ public class HardwareService
 
         try
         {
-            // Detect CPU and RAM via WMI
-            using var searcherCpu = new ManagementObjectSearcher("select Name, NumberOfCores from Win32_Processor");
-            foreach (var obj in searcherCpu.Get())
+            await Task.Run(() =>
             {
-                info.CpuName = obj["Name"]?.ToString() ?? "Unknown CPU";
-                info.CpuCores = int.Parse(obj["NumberOfCores"]?.ToString() ?? "0");
-                break;
-            }
-
-            using var searcherRam = new ManagementObjectSearcher("select TotalPhysicalMemory from Win32_ComputerSystem");
-            foreach (var obj in searcherRam.Get())
-            {
-                info.TotalRamBytes = long.Parse(obj["TotalPhysicalMemory"]?.ToString() ?? "0");
-                break;
-            }
-
-            // Detect GPU and AI Backend via Python
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = _pythonExecutable,
-                Arguments = $"\"{_scriptPath}\" --check-gpu",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            };
-
-            using var process = Process.Start(startInfo);
-            if (process != null)
-            {
-                string output = await process.StandardOutput.ReadToEndAsync();
-                await process.WaitForExitAsync();
-
-                foreach (var line in output.Split('\n'))
+                // Detect CPU via WMI
+                using var searcherCpu = new ManagementObjectSearcher("select Name, NumberOfCores from Win32_Processor");
+                foreach (var obj in searcherCpu.Get())
                 {
-                    if (line.StartsWith("HW_INFO:"))
-                    {
-                        var json = line.Substring(8);
-                        var pyInfo = JsonSerializer.Deserialize<PythonHwInfo>(json);
-                        if (pyInfo != null)
-                        {
-                            info.HasCuda = pyInfo.has_cuda;
-                            info.GpuName = pyInfo.gpu_name;
-                            info.VramBytes = pyInfo.vram_total;
-                            info.HasDirectML = pyInfo.has_directml;
-                        }
-                    }
+                    info.CpuName = obj["Name"]?.ToString() ?? "Unknown CPU";
+                    info.CpuCores = int.Parse(obj["NumberOfCores"]?.ToString() ?? "0");
+                    break;
                 }
-            }
+
+                // Detect RAM via WMI
+                using var searcherRam = new ManagementObjectSearcher("select TotalPhysicalMemory from Win32_ComputerSystem");
+                foreach (var obj in searcherRam.Get())
+                {
+                    info.TotalRamBytes = long.Parse(obj["TotalPhysicalMemory"]?.ToString() ?? "0");
+                    break;
+                }
+
+                // Detect GPU via WMI (Python依存を排除)
+                using var searcherGpu = new ManagementObjectSearcher("select Name, AdapterRAM from Win32_VideoController");
+                foreach (var obj in searcherGpu.Get())
+                {
+                    string name = obj["Name"]?.ToString() ?? "";
+                    if (name.Contains("Microsoft Remote Display") || name.Contains("Basic Render")) continue;
+
+                    info.GpuName = name;
+                    info.VramBytes = Math.Abs(long.Parse(obj["AdapterRAM"]?.ToString() ?? "0"));
+                    info.HasDirectML = true; // Win10+ なら基本的に利用可能
+                    
+                    if (name.Contains("NVIDIA")) info.HasCuda = true;
+                    break;
+                }
+            });
         }
         catch (Exception ex)
         {
@@ -76,13 +56,5 @@ public class HardwareService
         }
 
         return info;
-    }
-
-    private class PythonHwInfo
-    {
-        public bool has_cuda { get; set; }
-        public string gpu_name { get; set; } = string.Empty;
-        public long vram_total { get; set; }
-        public bool has_directml { get; set; }
     }
 }

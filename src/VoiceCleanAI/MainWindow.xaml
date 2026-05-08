@@ -8,9 +8,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="VoiceCleanAI"
     mc:Ignorable="d">
-    <Window.SystemBackdrop>
+    <!-- <Window.SystemBackdrop>
         <MicaBackdrop />
-    </Window.SystemBackdrop>
+    </Window.SystemBackdrop> -->
 
     <Grid>
         <Grid.RowDefinitions>
