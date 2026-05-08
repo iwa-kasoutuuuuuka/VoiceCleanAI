@@ -166,7 +166,8 @@
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                                             <TextBlock Text="{x:Bind FileName, Mode=OneWay}" FontWeight="SemiBold" />
                                             <controls:WaveformView Height="20" Width="150" HorizontalAlignment="Left" Margin="0,4"
-                                                                   IsActive="{x:Bind IsProcessing, Mode=OneWay}" />
+                                                                   IsActive="{x:Bind IsProcessing, Mode=OneWay}"
+                                                                   WaveformData="{x:Bind WaveformData, Mode=OneWay}" />
                                             <ProgressBar Value="{x:Bind ProgressValue, Mode=OneWay}" Maximum="1" 
                                                          Visibility="{x:Bind IsProcessing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                                                          Foreground="{ThemeResource AccentFillColorDefaultBrush}" Height="4" />

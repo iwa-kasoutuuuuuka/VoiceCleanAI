@@ -18,10 +18,19 @@ public class WaveformView : Canvas
     public static readonly DependencyProperty IsActiveProperty =
         DependencyProperty.Register("IsActive", typeof(bool), typeof(WaveformView), new PropertyMetadata(false, OnIsActiveChanged));
 
+    public static readonly DependencyProperty WaveformDataProperty =
+        DependencyProperty.Register("WaveformData", typeof(float[]), typeof(WaveformView), new PropertyMetadata(null, OnWaveformDataChanged));
+
     public bool IsActive
     {
         get => (bool)GetValue(IsActiveProperty);
         set => SetValue(IsActiveProperty, value);
+    }
+
+    public float[]? WaveformData
+    {
+        get => (float[]?)GetValue(WaveformDataProperty);
+        set => SetValue(WaveformDataProperty, value);
     }
 
     public WaveformView()
@@ -47,6 +56,12 @@ public class WaveformView : Canvas
         else control.StopAnimation();
     }
 
+    private static void OnWaveformDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var control = (WaveformView)d;
+        control.CreateBars();
+    }
+
     private void CreateBars()
     {
         this.Children.Clear();
@@ -56,20 +71,26 @@ public class WaveformView : Canvas
         double height = this.ActualHeight;
         if (width <= 0 || height <= 0) return;
 
-        int barCount = (int)(width / 6);
+        float[]? data = WaveformData;
+        int barCount = (data != null && data.Length > 0) ? data.Length : (int)(width / 6);
+        double barWidth = Math.Max(2, (width / barCount) - 2);
+
         for (int i = 0; i < barCount; i++)
         {
+            float val = (data != null && i < data.Length) ? data[i] : 0.2f;
+            
             var bar = new Rectangle
             {
-                Width = 4,
-                Height = height * 0.2,
+                Width = barWidth,
+                Height = Math.Max(2, height * val),
                 Fill = (Brush)Application.Current.Resources["AccentFillColorDefaultBrush"],
-                RadiusX = 2,
-                RadiusY = 2,
-                VerticalAlignment = VerticalAlignment.Center
+                RadiusX = barWidth / 2,
+                RadiusY = barWidth / 2,
+                VerticalAlignment = VerticalAlignment.Center,
+                Opacity = (data != null) ? 1.0 : 0.3
             };
             
-            Canvas.SetLeft(bar, i * 6);
+            Canvas.SetLeft(bar, i * (barWidth + 2));
             Canvas.SetTop(bar, (height - bar.Height) / 2);
             
             this.Children.Add(bar);
@@ -94,20 +115,21 @@ public class WaveformView : Canvas
     {
         _isAnimating = false;
         _timer?.Stop();
-        foreach (var bar in _bars)
-        {
-            bar.Height = this.ActualHeight * 0.2;
-            Canvas.SetTop(bar, (this.ActualHeight - bar.Height) / 2);
-        }
+        CreateBars(); // Reset to static waveform
     }
 
     private void UpdateBars()
     {
         double height = this.ActualHeight;
-        foreach (var bar in _bars)
+        float[]? data = WaveformData;
+
+        for (int i = 0; i < _bars.Count; i++)
         {
-            double targetHeight = height * (0.1 + _random.NextDouble() * 0.8);
-            bar.Height = Math.Max(4, targetHeight);
+            var bar = _bars[i];
+            double baseVal = (data != null && i < data.Length) ? data[i] : 0.2;
+            double targetHeight = height * (baseVal * (0.5 + _random.NextDouble() * 1.0));
+            
+            bar.Height = Math.Max(2, Math.Min(height, targetHeight));
             Canvas.SetTop(bar, (height - bar.Height) / 2);
         }
     }

@@ -16,6 +16,7 @@ public partial class MainPageViewModel : ObservableObject
     private readonly InferenceManager _inferenceManager;
     private readonly HardwareService _hardwareService;
     private readonly LogService _logService;
+    private readonly WaveformService _waveformService;
 
     [ObservableProperty]
     public partial string Greeting { get; set; } = "VoiceClean AI";
@@ -78,6 +79,7 @@ public partial class MainPageViewModel : ObservableObject
         _inferenceManager = new InferenceManager(_onnxService, _logService);
         
         _hardwareService = new HardwareService();
+        _waveformService = new WaveformService(_logService);
 
         _inferenceManager.ProcessingStateChanged += (s, processing) => IsProcessing = processing;
         _inferenceManager.GlobalProgressChanged += (s, progress) => GlobalProgress = progress;
@@ -109,7 +111,15 @@ public partial class MainPageViewModel : ObservableObject
         }
 
         var task = new AudioTask { InputFilePath = filePath };
-        Tasks.Add(new TaskViewModel(task));
+        var taskVm = new TaskViewModel(task);
+        Tasks.Add(taskVm);
+
+        // 非同期で波形を生成
+        _ = Task.Run(async () =>
+        {
+            var data = await _waveformService.GetWaveformDataAsync(filePath, 50);
+            taskVm.WaveformData = data;
+        });
     }
 
     [RelayCommand]

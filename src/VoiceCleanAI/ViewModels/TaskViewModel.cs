@@ -22,6 +22,9 @@ public partial class TaskViewModel : ObservableObject
     public partial string FullFilePath { get; set; } = string.Empty;
 
     [ObservableProperty]
+    public partial float[]? WaveformData { get; set; }
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsProcessing))]
     [NotifyPropertyChangedFor(nameof(IsCompleted))]
     public partial ModelTaskStatus Status { get; set; }
