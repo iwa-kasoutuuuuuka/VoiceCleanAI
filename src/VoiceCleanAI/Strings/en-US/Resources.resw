@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="AppTitle.Text" xml:space="preserve">
+    <value>VoiceClean AI</value>
+  </data>
+  <data name="DropHint.Text" xml:space="preserve">
+    <value>Drag &amp; drop files here to add</value>
+  </data>
+  <data name="StartBtn.Content" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="CancelBtn.Content" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ClearBtn.Content" xml:space="preserve">
+    <value>Clear Completed</value>
+  </data>
+  <data name="AdvancedToggle.Header" xml:space="preserve">
+    <value>Advanced Settings</value>
+  </data>
+</root>

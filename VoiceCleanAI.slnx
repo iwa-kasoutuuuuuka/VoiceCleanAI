@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VoiceCleanAI.Core/VoiceCleanAI.Core.csproj" />
+    <Project Path="src/VoiceCleanAI/VoiceCleanAI.csproj" />
+  </Folder>
+</Solution>

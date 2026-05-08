@@ -1,0 +1,6 @@
+torch
+torchaudio
+onnxruntime-gpu
+numpy
+ffmpeg-python
+resemble-enhance

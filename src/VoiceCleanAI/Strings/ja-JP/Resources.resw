@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="AppTitle.Text" xml:space="preserve">
+    <value>VoiceClean AI</value>
+  </data>
+  <data name="DropHint.Text" xml:space="preserve">
+    <value>ファイルをここにドラッグ＆ドロップして追加</value>
+  </data>
+  <data name="StartBtn.Content" xml:space="preserve">
+    <value>処理開始</value>
+  </data>
+  <data name="CancelBtn.Content" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="ClearBtn.Content" xml:space="preserve">
+    <value>すべてクリア</value>
+  </data>
+  <data name="AdvancedToggle.Header" xml:space="preserve">
+    <value>詳細設定</value>
+  </data>
+</root>

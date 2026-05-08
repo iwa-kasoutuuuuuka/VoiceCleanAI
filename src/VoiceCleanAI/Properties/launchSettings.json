@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "VoiceCleanAI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "VoiceCleanAI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
