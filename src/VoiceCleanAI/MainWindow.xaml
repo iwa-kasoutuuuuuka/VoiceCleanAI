@@ -6,11 +6,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:VoiceCleanAI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="VoiceCleanAI"
+    Title="VoiceClean AI"
     mc:Ignorable="d">
-    <!-- <Window.SystemBackdrop>
-        <MicaBackdrop />
-    </Window.SystemBackdrop> -->
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop Kind="MainlyUsed" />
+    </Window.SystemBackdrop>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -18,17 +19,32 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TitleBar x:Name="AppTitleBar" Title="VoiceCleanAI">
+        <TitleBar x:Name="AppTitleBar" Title="VoiceClean AI">
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="Assets/AppIcon.ico" />
             </TitleBar.IconSource>
         </TitleBar>
 
-        <!--
-            The Frame hosts pages for your application content. Add your UI to
-            MainPage.xaml rather than here so you can use Page features such as
-            navigation events and the Loaded lifecycle.
-        -->
-        <Frame x:Name="RootFrame" Grid.Row="1" />
+        <NavigationView x:Name="NavView" 
+                        Grid.Row="1"
+                        PaneDisplayMode="Left"
+                        IsBackButtonVisible="Collapsed"
+                        IsSettingsVisible="True"
+                        Header="ホーム (Home)"
+                        SelectionChanged="NavView_SelectionChanged">
+            
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="ホーム (Home)" Tag="Home" Icon="Home" />
+                <NavigationViewItem Content="履歴 (History)" Tag="History" Icon="History" />
+                <NavigationViewItemSeparator />
+                <NavigationViewItem Content="ハードウェア (Hardware)" Tag="Hardware" Icon="Repair" />
+            </NavigationView.MenuItems>
+
+            <NavigationView.FooterMenuItems>
+                <NavigationViewItem Content="ログ出力 (Export Logs)" Tag="Logs" Icon="Document" />
+            </NavigationView.FooterMenuItems>
+
+            <Frame x:Name="ContentFrame" Margin="24,0,24,24" />
+        </NavigationView>
     </Grid>
 </Window>

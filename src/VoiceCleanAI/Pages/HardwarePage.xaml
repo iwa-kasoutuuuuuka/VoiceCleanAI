@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="VoiceCleanAI.Pages.HardwarePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:VoiceCleanAI.ViewModels"
+    mc:Ignorable="d">
+
+    <StackPanel Spacing="24" Padding="0,20">
+        <TextBlock Text="ハードウェア診断 (Hardware Diagnostics)" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="SemiBold" />
+        
+        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+                BorderThickness="1" CornerRadius="8" Padding="24">
+            <StackPanel Spacing="16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Glyph="&#xE963;" FontSize="48" Foreground="{ThemeResource AccentFillColorDefaultBrush}" Margin="0,0,24,0" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                        <TextBlock Text="{Binding ViewModel.CurrentHardware.GpuName, Mode=OneWay}" Style="{StaticResource BodyStrongTextBlockStyle}" FontSize="20" />
+                        <TextBlock Text="{Binding ViewModel.HardwareStatusText, Mode=OneWay}" Opacity="0.7" />
+                    </StackPanel>
+                </Grid>
+
+                <MenuFlyoutSeparator />
+
+                <Grid ColumnSpacing="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="推論エンジン (Inference Engine)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6" />
+                        <TextBlock Text="{Binding ViewModel.CurrentHardware.BackendDisplayName, Mode=OneWay}" FontWeight="SemiBold" />
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock Text="VRAM 使用量 (VRAM Usage)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6" />
+                        <TextBlock Text="{Binding ViewModel.CurrentHardware.VramGB, Mode=OneWay, ConverterParameter='\{0:F2\} GB', Converter={StaticResource StringFormatConverter}}" FontWeight="SemiBold" />
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="2" Spacing="4">
+                        <TextBlock Text="CUDA 加速 (CUDA Support)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6" />
+                        <TextBlock Text="{Binding ViewModel.CurrentHardware.HasCuda, Mode=OneWay}" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="詳細情報 (Technical Details)" Style="{StaticResource BodyStrongTextBlockStyle}" />
+        <TextBlock Text="AI 処理のパフォーマンスを最適化するために、検出されたハードウェアに基づいてバッチサイズやチャンクサイズが自動調整されています。 (Batch sizes and chunk sizes are automatically adjusted based on detected hardware to optimize performance.)" 
+                   Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7" TextWrapping="Wrap" />
+    </StackPanel>
+</Page>

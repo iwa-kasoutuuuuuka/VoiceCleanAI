@@ -11,7 +11,7 @@ namespace VoiceCleanAI;
 
 public sealed partial class MainPage : Page
 {
-    public MainPageViewModel ViewModel { get; } = new();
+    public MainPageViewModel ViewModel => App.ViewModel;
 
     public MainPage()
     {

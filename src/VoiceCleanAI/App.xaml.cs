@@ -49,5 +49,6 @@ public partial class App : Application
     }
 
     public static Window? MainWindow => ((App)Application.Current).m_window;
+    public static VoiceCleanAI.ViewModels.MainPageViewModel ViewModel { get; } = new();
     private Window? m_window;
 }

@@ -11,18 +11,11 @@
     xmlns:conv="using:VoiceCleanAI.Converters"
     xmlns:controls="using:VoiceCleanAI.Controls"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="Transparent">
 
     <Page.Resources>
-        <conv:StatusToVisibilityConverter x:Key="StatusToVisibilityConverter" />
-        <conv:EmptyCollectionToVisibilityConverter x:Key="EmptyCollectionToVisibilityConverter" />
-        <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
-        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <conv:IntToBoolConverter x:Key="IntToBoolConverter" />
-        <conv:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
-        
         <Style x:Key="SettingsCardStyle" TargetType="Border">
-            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+            <Setter Property="Background" Value="{ThemeResource LayerFillColorDefaultBrush}" />
             <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="8" />
@@ -32,41 +25,16 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <Grid Grid.Row="0" Padding="32,24" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            
-            <StackPanel Spacing="4">
-                <TextBlock Text="VoiceClean AI" Style="{StaticResource TitleTextBlockStyle}" FontWeight="Bold" Foreground="{ThemeResource AccentFillColorDefaultBrush}" />
-                <TextBlock Text="究極の AI ノイズ除去 &amp; 音質向上エンジン (Ultimate AI Noise Removal &amp; Enhancement)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.8" />
-            </StackPanel>
-
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                <Border Padding="12,6" Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}" CornerRadius="12"
-                        Visibility="{x:Bind ViewModel.CurrentHardware.HasCuda, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon Glyph="&#xE963;" FontSize="12" Foreground="White" />
-                        <TextBlock Text="GPU 加速有効 (GPU Accelerated)" FontSize="12" Foreground="White" FontWeight="SemiBold" />
-                    </StackPanel>
-                </Border>
-                <TextBlock Text="{x:Bind ViewModel.HardwareStatusText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6" VerticalAlignment="Center" />
-            </StackPanel>
-        </Grid>
-
         <!-- Main Content Area -->
-        <ScrollViewer Grid.Row="1" Padding="32,0">
-            <StackPanel Spacing="24" MaxWidth="1000" HorizontalAlignment="Stretch">
+        <ScrollViewer Grid.Row="0">
+            <StackPanel Spacing="24" MaxWidth="1000" HorizontalAlignment="Stretch" Padding="0,0,0,20">
                 
                 <!-- Quick Settings Card -->
-                <Border Style="{StaticResource SettingsCardStyle}" Margin="0,20,0,0">
+                <Border Style="{StaticResource SettingsCardStyle}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -122,32 +90,29 @@
                         
                         <StackPanel Grid.Column="0" Spacing="4">
                             <Grid>
-                                <TextBlock Text="Lambd (ノイズ除去強度 - Intensity)" Style="{StaticResource CaptionTextBlockStyle}" />
+                                <TextBlock Text="Intensity (除去強度)" Style="{StaticResource CaptionTextBlockStyle}" />
                                 <TextBlock Text="{x:Bind ViewModel.ManualLambd, Mode=OneWay}" HorizontalAlignment="Right" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="Bold" />
                             </Grid>
                             <Slider Value="{x:Bind ViewModel.ManualLambd, Mode=TwoWay}" Minimum="0" Maximum="1" StepFrequency="0.01" />
-                            <TextBlock Text="高いほどノイズが消えますが、声が不自然になる場合があります。 (Higher removes more noise but may sound unnatural.)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6" TextWrapping="Wrap" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Spacing="4">
                             <Grid>
-                                <TextBlock Text="Tau (位相感度 - Phase Sensitivity)" Style="{StaticResource CaptionTextBlockStyle}" />
+                                <TextBlock Text="Sensitivity (感度)" Style="{StaticResource CaptionTextBlockStyle}" />
                                 <TextBlock Text="{x:Bind ViewModel.ManualTau, Mode=OneWay}" HorizontalAlignment="Right" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="Bold" />
                             </Grid>
                             <Slider Value="{x:Bind ViewModel.ManualTau, Mode=TwoWay}" Minimum="0" Maximum="1" StepFrequency="0.01" />
-                            <TextBlock Text="高いほどクリアになりますが、アーティファクトが発生しやすくなります。 (Higher is clearer but may cause artifacts.)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6" TextWrapping="Wrap" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Spacing="8">
-                            <TextBlock Text="エンコーダー選択 (Encoder Selection)" Style="{StaticResource CaptionTextBlockStyle}" />
+                            <TextBlock Text="エンコーダー (Encoder)" Style="{StaticResource CaptionTextBlockStyle}" />
                             <ComboBox ItemsSource="{x:Bind ViewModel.Encoders}" SelectedItem="{x:Bind ViewModel.SelectedEncoder, Mode=TwoWay}" HorizontalAlignment="Stretch" />
-                            <TextBlock Text="GPU 加速が可能な場合は NVENC 等を推奨します。 (NVENC recommended for GPU acceleration.)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6" />
                         </StackPanel>
                     </Grid>
                 </Expander>
 
                 <!-- Task List Card -->
-                <Border Style="{StaticResource SettingsCardStyle}" MinHeight="300">
+                <Border Style="{StaticResource SettingsCardStyle}" MinHeight="400">
                     <Grid>
                         <ListView ItemsSource="{x:Bind ViewModel.Tasks, Mode=OneWay}" SelectionMode="None">
                             <ListView.ItemTemplate>
@@ -165,7 +130,7 @@
                                         
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                                             <TextBlock Text="{x:Bind FileName, Mode=OneWay}" FontWeight="SemiBold" />
-                                            <controls:WaveformView Height="20" Width="150" HorizontalAlignment="Left" Margin="0,4"
+                                            <controls:WaveformView Height="24" Width="200" HorizontalAlignment="Left" Margin="0,4"
                                                                    IsActive="{x:Bind IsProcessing, Mode=OneWay}"
                                                                    WaveformData="{x:Bind WaveformData, Mode=OneWay}" />
                                             <ProgressBar Value="{x:Bind ProgressValue, Mode=OneWay}" Maximum="1" 
@@ -189,8 +154,7 @@
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" AllowDrop="True" DragOver="OnDragOver" Drop="OnDrop"
                                     Visibility="{x:Bind ViewModel.Tasks, Converter={StaticResource EmptyCollectionToVisibilityConverter}, Mode=OneWay}">
                             <FontIcon Glyph="&#xE8E5;" FontSize="64" Opacity="0.2" />
-                            <TextBlock Text="ファイルをここにドラッグ＆ドロップ (Drop files here)" Opacity="0.5" FontSize="18" FontWeight="SemiBold" />
-                            <TextBlock Text="WAV, MP3, MP4 などの音声・動画ファイルに対応 (Supports WAV, MP3, MP4, etc.)" Opacity="0.4" FontSize="12" />
+                            <TextBlock Text="ファイルをドラッグ＆ドロップ (Drop files here)" Opacity="0.5" FontSize="18" FontWeight="SemiBold" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -198,24 +162,22 @@
         </ScrollViewer>
 
         <!-- Global Action Bar -->
-        <Border Grid.Row="2" Padding="32,20" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
-                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+        <Border Grid.Row="1" Padding="0,16,0,0" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
             <Grid>
                 <StackPanel VerticalAlignment="Center" Spacing="8">
-                    <ProgressBar Value="{x:Bind ViewModel.GlobalProgress, Mode=OneWay}" Maximum="1" MinWidth="400" Height="10" CornerRadius="5"
+                    <ProgressBar Value="{x:Bind ViewModel.GlobalProgress, Mode=OneWay}" Maximum="1" MinWidth="400" Height="8" CornerRadius="4"
                                  Visibility="{x:Bind ViewModel.IsProcessing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                     <TextBlock Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" 
                                Visibility="{x:Bind ViewModel.IsProcessing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </StackPanel>
 
                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="12">
-                    <Button Content="ログ出力 (Export Logs)" Command="{x:Bind ViewModel.ExportLogsCommand}" />
-                    <Button Content="完了した項目をクリア (Clear Completed)" Command="{x:Bind ViewModel.ClearCompletedCommand}" />
+                    <Button Content="全消去 (Clear All)" Command="{x:Bind ViewModel.ClearAllCommand}" />
                     <Button Content="処理開始 (Start Processing)" Command="{x:Bind ViewModel.StartAllCommand}" 
-                            Style="{StaticResource AccentButtonStyle}" Padding="32,8"
+                            Style="{StaticResource AccentButtonStyle}" Padding="40,8"
                             Visibility="{x:Bind ViewModel.IsProcessing, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}" />
                     <Button Content="キャンセル (Cancel)" Command="{x:Bind ViewModel.CancelAllCommand}" 
-                            Padding="32,8" Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                            Padding="40,8" Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                             Visibility="{x:Bind ViewModel.IsProcessing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </StackPanel>
             </Grid>

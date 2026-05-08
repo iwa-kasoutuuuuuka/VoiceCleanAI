@@ -1,36 +1,44 @@
 using Microsoft.UI.Xaml;
-using System.IO;
+using Microsoft.UI.Xaml.Controls;
+using System;
+using VoiceCleanAI.ViewModels;
+using VoiceCleanAI.Pages;
 
 namespace VoiceCleanAI;
 
 public sealed partial class MainWindow : Window
 {
+    public static MainWindow Instance { get; private set; } = null!;
+
     public MainWindow()
     {
-        try
+        Instance = this;
+        InitializeComponent();
+
+        // 初期ページを表示
+        ContentFrame.Navigate(typeof(MainPage));
+    }
+
+    private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+    {
+        if (args.IsSettingsSelected)
         {
-            InitializeComponent();
-
-            ExtendsContentIntoTitleBar = true;
-            if (AppTitleBar != null)
-            {
-                SetTitleBar(AppTitleBar);
-            }
-
-            // アイコンの設定（失敗しても続行）
-            try 
-            { 
-                AppWindow.SetIcon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "StoreLogo.png")); 
-            } 
-            catch { }
-
-            RootFrame.Navigate(typeof(MainPage));
+            // 設定ページへ（未実装の場合はプレースホルダ）
+            sender.Header = "設定 (Settings)";
         }
-        catch (Exception ex)
+        else if (args.SelectedItemContainer != null)
         {
-            string crashPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "startup_crash.txt");
-            File.WriteAllText(crashPath, ex.ToString());
-            throw;
+            string tag = args.SelectedItemContainer.Tag.ToString() ?? "";
+            sender.Header = args.SelectedItemContainer.Content;
+
+            if (tag == "Home")
+            {
+                ContentFrame.Navigate(typeof(MainPage));
+            }
+            else if (tag == "Hardware")
+            {
+                ContentFrame.Navigate(typeof(HardwarePage));
+            }
         }
     }
 }
