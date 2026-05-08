@@ -29,8 +29,29 @@ public partial class TaskViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsCompleted))]
     public partial ModelTaskStatus Status { get; set; }
 
+    partial void OnStatusChanged(ModelTaskStatus value)
+    {
+        StatusText = value switch
+        {
+            ModelTaskStatus.Queued => "待機中 (Queued)",
+            ModelTaskStatus.Processing => $"処理中 (Processing... {ProgressValue:P0})",
+            ModelTaskStatus.Completed => "完了 (Completed)",
+            ModelTaskStatus.Failed => $"失敗 (Failed): {_model.ErrorMessage}",
+            ModelTaskStatus.Cancelled => "キャンセル済み (Cancelled)",
+            _ => "不明 (Unknown)"
+        };
+    }
+
     [ObservableProperty]
-    public partial double ProgressValue { get; set; } // Progress との衝突を避けるため名称変更
+    public partial double ProgressValue { get; set; }
+
+    partial void OnProgressValueChanged(double value)
+    {
+        if (Status == ModelTaskStatus.Processing)
+        {
+            StatusText = $"処理中 (Processing... {value:P0})";
+        }
+    }
 
     [ObservableProperty]
     public partial string StatusText { get; set; } = string.Empty;
@@ -47,14 +68,5 @@ public partial class TaskViewModel : ObservableObject
         FullFilePath = _model.InputFilePath;
         Status = _model.Status;
         ProgressValue = _model.Progress;
-        StatusText = Status switch
-        {
-            ModelTaskStatus.Queued => "待機中 (Queued)",
-            ModelTaskStatus.Processing => $"処理中 (Processing... {ProgressValue:P0})",
-            ModelTaskStatus.Completed => "完了 (Completed)",
-            ModelTaskStatus.Failed => "失敗 (Failed)",
-            ModelTaskStatus.Cancelled => "キャンセル済み (Cancelled)",
-            _ => "不明 (Unknown)"
-        };
     }
 }

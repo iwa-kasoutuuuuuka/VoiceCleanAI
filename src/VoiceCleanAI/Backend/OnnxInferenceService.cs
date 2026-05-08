@@ -54,6 +54,19 @@ public class OnnxInferenceService
 
     private void FindFFmpeg()
     {
+        // 1. ポータブル版 (.exe 自体の場所) を探す
+        string? exeDir = Path.GetDirectoryName(Environment.ProcessPath);
+        if (exeDir != null)
+        {
+            string localExeFFmpeg = Path.Combine(exeDir, "ffmpeg.exe");
+            if (File.Exists(localExeFFmpeg))
+            {
+                _ffmpegPath = localExeFFmpeg;
+                return;
+            }
+        }
+        
+        // 2. 展開先 (BaseDirectory) を探す
         string localFFmpeg = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg.exe");
         if (File.Exists(localFFmpeg)) _ffmpegPath = localFFmpeg;
     }

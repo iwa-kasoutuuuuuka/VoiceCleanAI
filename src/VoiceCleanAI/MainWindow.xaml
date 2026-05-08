@@ -10,41 +10,36 @@
     mc:Ignorable="d">
 
     <Window.SystemBackdrop>
-        <MicaBackdrop Kind="MainlyUsed" />
+        <MicaBackdrop Kind="Base" />
     </Window.SystemBackdrop>
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
-        <TitleBar x:Name="AppTitleBar" Title="VoiceClean AI">
-            <TitleBar.IconSource>
-                <ImageIconSource ImageSource="Assets/AppIcon.ico" />
-            </TitleBar.IconSource>
-        </TitleBar>
-
         <NavigationView x:Name="NavView" 
-                        Grid.Row="1"
                         PaneDisplayMode="Left"
-                        IsBackButtonVisible="Collapsed"
                         IsSettingsVisible="True"
                         Header="ホーム (Home)"
                         SelectionChanged="NavView_SelectionChanged">
             
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="ホーム (Home)" Tag="Home" Icon="Home" />
-                <NavigationViewItem Content="履歴 (History)" Tag="History" Icon="History" />
+                <NavigationViewItem Content="ホーム (Home)" Tag="Home">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE80F;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="履歴 (History)" Tag="History">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE81C;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItemSeparator />
-                <NavigationViewItem Content="ハードウェア (Hardware)" Tag="Hardware" Icon="Repair" />
+                <NavigationViewItem Content="ハードウェア (Hardware)" Tag="Hardware">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE963;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
 
-            <NavigationView.FooterMenuItems>
-                <NavigationViewItem Content="ログ出力 (Export Logs)" Tag="Logs" Icon="Document" />
-            </NavigationView.FooterMenuItems>
-
-            <Frame x:Name="ContentFrame" Margin="24,0,24,24" />
+            <Frame x:Name="RootFrame" Margin="24,0,24,24" />
         </NavigationView>
     </Grid>
 </Window>

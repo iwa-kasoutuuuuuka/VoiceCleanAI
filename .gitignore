@@ -491,3 +491,6 @@ env/
 *.pth
 *.bin
 models/
+
+PortableBuild/
+src/VoiceCleanAI/bin/*/ffmpeg.exe

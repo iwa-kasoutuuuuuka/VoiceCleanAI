@@ -4,11 +4,9 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:VoiceCleanAI"
-    xmlns:vm="using:VoiceCleanAI.ViewModels"
-    xmlns:core="using:VoiceCleanAI.Core.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:conv="using:VoiceCleanAI.Converters"
+    xmlns:vm="using:VoiceCleanAI.ViewModels"
     xmlns:controls="using:VoiceCleanAI.Controls"
     mc:Ignorable="d"
     Background="Transparent">
@@ -23,162 +21,116 @@
         </Style>
     </Page.Resources>
 
-    <Grid>
+    <Grid RowSpacing="24" Padding="24">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <!-- Header Area -->
+        <StackPanel Spacing="8">
+            <TextBlock Text="AI音声クリーニング (AI Voice Cleaning)" Style="{StaticResource TitleTextBlockStyle}" FontWeight="Bold" />
+            <TextBlock Text="録音からノイズを完全に除去し、スタジオ品質の音声へ。 (Remove noise and enhance voice to studio quality.)" Style="{StaticResource BodyTextBlockStyle}" Opacity="0.7" />
+        </StackPanel>
+
         <!-- Main Content Area -->
-        <ScrollViewer Grid.Row="0">
-            <StackPanel Spacing="24" MaxWidth="1000" HorizontalAlignment="Stretch" Padding="0,0,0,20">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="20">
                 
-                <!-- Quick Settings Card -->
-                <Border Style="{StaticResource SettingsCardStyle}">
+                <!-- Drop Zone / Task List -->
+                <Border Style="{StaticResource SettingsCardStyle}" 
+                        AllowDrop="True" 
+                        DragOver="OnDragOver" 
+                        Drop="OnDrop"
+                        MinHeight="200"
+                        Background="{ThemeResource SystemControlPageBackgroundChromeLowBrush}">
                     <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        
-                        <StackPanel Grid.Column="0" Spacing="8" Padding="0,0,24,0">
-                            <TextBlock Text="処理プリセット (Presets)" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <!-- Empty State -->
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12"
+                                    Visibility="{x:Bind ViewModel.Tasks.Count, Mode=OneWay, Converter={StaticResource IntToVisibilityConverter}, ConverterParameter=0}">
+                            <FontIcon Glyph="&#xE8E5;" FontSize="48" Foreground="{ThemeResource AccentFillColorDefaultBrush}" />
+                            <TextBlock Text="音声ファイルをここにドラッグ＆ドロップ (Drop audio files here)" HorizontalAlignment="Center" />
+                            <Button Content="ファイルを選択 (Select Files)" HorizontalAlignment="Center" Click="OnSelectFilesClick" Style="{StaticResource AccentButtonStyle}" />
+                        </StackPanel>
+
+                        <!-- Task List Area -->
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Tasks, Mode=OneWay}"
+                                      Visibility="{x:Bind ViewModel.Tasks.Count, Mode=OneWay, Converter={StaticResource InverseIntToVisibilityConverter}, ConverterParameter=0}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:TaskViewModel">
+                                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                                            CornerRadius="4" Padding="12" Margin="0,0,0,8"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                                        <Grid ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="200" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <FontIcon Glyph="&#xE8D6;" Foreground="{ThemeResource AccentFillColorDefaultBrush}" VerticalAlignment="Center" />
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{x:Bind FileName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{x:Bind StatusText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7" />
+                                            </StackPanel>
+                                            
+                                            <!-- 波形表示 -->
+                                            <controls:WaveformView Grid.Column="2" 
+                                                                   WaveformData="{x:Bind WaveformData, Mode=OneWay}" 
+                                                                   Height="40" VerticalAlignment="Center" Margin="12,0" />
+                                            
+                                            <ProgressRing Grid.Column="3" IsActive="{x:Bind IsProcessing, Mode=OneWay}" Width="20" Height="20" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+
+                <!-- Processing Options -->
+                <TextBlock Text="処理設定 (Processing Settings)" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    
+                    <Border Grid.Column="0" Style="{StaticResource SettingsCardStyle}">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="プリセット (Preset)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7" />
                             <ComboBox ItemsSource="{x:Bind ViewModel.Presets}" 
                                       SelectedItem="{x:Bind ViewModel.SelectedPreset, Mode=TwoWay}"
-                                      HorizontalAlignment="Stretch">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate x:DataType="core:ProcessingPreset">
-                                        <TextBlock Text="{x:Bind Name}" />
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                            <TextBlock Text="{x:Bind ViewModel.SelectedPreset.Description, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7" TextWrapping="Wrap" />
+                                      DisplayMemberPath="Name"
+                                      HorizontalAlignment="Stretch" />
+                            <TextBlock Text="{x:Bind ViewModel.SelectedPreset.Description, Mode=OneWay}" 
+                                       Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6" TextWrapping="Wrap" Margin="0,4,0,0" />
                         </StackPanel>
+                    </Border>
 
-                        <StackPanel Grid.Column="1" Spacing="8" Padding="12,0" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="1,0,0,0">
-                            <TextBlock Text="保存先設定 (Output Settings)" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                            <RadioButton Content="元ファイルと同じフォルダ (Same as Input)" IsChecked="{x:Bind ViewModel.OutputDirectoryMode, Converter={StaticResource IntToBoolConverter}, ConverterParameter=0, Mode=TwoWay}" />
-                            <RadioButton Content="カスタムフォルダ (Custom Directory)" IsChecked="{x:Bind ViewModel.OutputDirectoryMode, Converter={StaticResource IntToBoolConverter}, ConverterParameter=1, Mode=TwoWay}" />
-                            <Grid Visibility="{x:Bind ViewModel.OutputDirectoryMode, Converter={StaticResource IntToVisibilityConverter}, ConverterParameter=1, Mode=OneWay}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="{x:Bind ViewModel.SelectedOutputDirectory, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,0,8,0" />
-                                <Button Grid.Column="1" Content="選択 (Pick)" Command="{x:Bind ViewModel.PickOutputDirectoryCommand}" Padding="8,4" />
-                            </Grid>
+                    <Border Grid.Column="1" Style="{StaticResource SettingsCardStyle}">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="出力設定 (Output)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7" />
+                            <RadioButton Content="元と同じフォルダ (Same as original)" IsChecked="{x:Bind ViewModel.OutputDirectoryMode, Converter={StaticResource IntToBoolConverter}, ConverterParameter=0, Mode=TwoWay}" />
+                            <RadioButton Content="専用フォルダ (Custom Folder)" IsChecked="{x:Bind ViewModel.OutputDirectoryMode, Converter={StaticResource IntToBoolConverter}, ConverterParameter=1, Mode=TwoWay}" />
                         </StackPanel>
-
-                        <StackPanel Grid.Column="2" Spacing="8" Padding="24,0,0,0" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="1,0,0,0">
-                            <TextBlock Text="オプション (Options)" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                            <CheckBox Content="完了時にフォルダを開く (Open Folder on Finish)" IsChecked="{x:Bind ViewModel.AutoOpenFolder, Mode=TwoWay}" />
-                            <ToggleSwitch Header="詳細設定モード (Advanced Mode)" IsOn="{x:Bind ViewModel.IsAdvancedMode, Mode=TwoWay}" OnContent="有効 (ON)" OffContent="無効 (OFF)" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <!-- Advanced Settings (Expander) -->
-                <Expander Header="詳細パラメータ調整 (Advanced Parameters)" IsExpanded="{x:Bind ViewModel.IsAdvancedMode, Mode=OneWay}" 
-                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                    <Grid ColumnSpacing="32" Padding="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        
-                        <StackPanel Grid.Column="0" Spacing="4">
-                            <Grid>
-                                <TextBlock Text="Intensity (除去強度)" Style="{StaticResource CaptionTextBlockStyle}" />
-                                <TextBlock Text="{x:Bind ViewModel.ManualLambd, Mode=OneWay}" HorizontalAlignment="Right" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="Bold" />
-                            </Grid>
-                            <Slider Value="{x:Bind ViewModel.ManualLambd, Mode=TwoWay}" Minimum="0" Maximum="1" StepFrequency="0.01" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Spacing="4">
-                            <Grid>
-                                <TextBlock Text="Sensitivity (感度)" Style="{StaticResource CaptionTextBlockStyle}" />
-                                <TextBlock Text="{x:Bind ViewModel.ManualTau, Mode=OneWay}" HorizontalAlignment="Right" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="Bold" />
-                            </Grid>
-                            <Slider Value="{x:Bind ViewModel.ManualTau, Mode=TwoWay}" Minimum="0" Maximum="1" StepFrequency="0.01" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2" Spacing="8">
-                            <TextBlock Text="エンコーダー (Encoder)" Style="{StaticResource CaptionTextBlockStyle}" />
-                            <ComboBox ItemsSource="{x:Bind ViewModel.Encoders}" SelectedItem="{x:Bind ViewModel.SelectedEncoder, Mode=TwoWay}" HorizontalAlignment="Stretch" />
-                        </StackPanel>
-                    </Grid>
-                </Expander>
-
-                <!-- Task List Card -->
-                <Border Style="{StaticResource SettingsCardStyle}" MinHeight="400">
-                    <Grid>
-                        <ListView ItemsSource="{x:Bind ViewModel.Tasks, Mode=OneWay}" SelectionMode="None">
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="vm:TaskViewModel">
-                                    <Grid Padding="0,8" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        
-                                        <Border Width="40" Height="40" Background="{ThemeResource AccentFillColorTertiaryBrush}" CornerRadius="20" Margin="0,0,16,0">
-                                            <FontIcon Glyph="&#xE8D6;" FontSize="18" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                                        </Border>
-                                        
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                            <TextBlock Text="{x:Bind FileName, Mode=OneWay}" FontWeight="SemiBold" />
-                                            <controls:WaveformView Height="24" Width="200" HorizontalAlignment="Left" Margin="0,4"
-                                                                   IsActive="{x:Bind IsProcessing, Mode=OneWay}"
-                                                                   WaveformData="{x:Bind WaveformData, Mode=OneWay}" />
-                                            <ProgressBar Value="{x:Bind ProgressValue, Mode=OneWay}" Maximum="1" 
-                                                         Visibility="{x:Bind IsProcessing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                         Foreground="{ThemeResource AccentFillColorDefaultBrush}" Height="4" />
-                                            <TextBlock Text="{x:Bind StatusText, Mode=OneWay}" FontSize="12" Opacity="0.7" />
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-                                            <FontIcon Glyph="&#xE73E;" Foreground="{ThemeResource SystemFillColorSuccessBrush}" 
-                                                      Visibility="{x:Bind IsCompleted, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                            <ProgressRing IsActive="True" Width="20" Height="20" 
-                                                          Visibility="{x:Bind IsProcessing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                        </StackPanel>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-
-                        <!-- Empty State / Drop Hint -->
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" AllowDrop="True" DragOver="OnDragOver" Drop="OnDrop"
-                                    Visibility="{x:Bind ViewModel.Tasks, Converter={StaticResource EmptyCollectionToVisibilityConverter}, Mode=OneWay}">
-                            <FontIcon Glyph="&#xE8E5;" FontSize="64" Opacity="0.2" />
-                            <TextBlock Text="ファイルをドラッグ＆ドロップ (Drop files here)" Opacity="0.5" FontSize="18" FontWeight="SemiBold" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
+                    </Border>
+                </Grid>
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Global Action Bar -->
-        <Border Grid.Row="1" Padding="0,16,0,0" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+        <!-- Action Bar -->
+        <Border Grid.Row="2" Style="{StaticResource SettingsCardStyle}" Margin="0,0,0,12">
             <Grid>
-                <StackPanel VerticalAlignment="Center" Spacing="8">
-                    <ProgressBar Value="{x:Bind ViewModel.GlobalProgress, Mode=OneWay}" Maximum="1" MinWidth="400" Height="8" CornerRadius="4"
-                                 Visibility="{x:Bind ViewModel.IsProcessing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                    <TextBlock Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" 
-                               Visibility="{x:Bind ViewModel.IsProcessing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <ProgressRing IsActive="{x:Bind ViewModel.IsProcessing, Mode=OneWay}" Width="24" Height="24" />
+                    <TextBlock Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" VerticalAlignment="Center" />
                 </StackPanel>
-
-                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="12">
-                    <Button Content="全消去 (Clear All)" Command="{x:Bind ViewModel.ClearAllCommand}" />
-                    <Button Content="処理開始 (Start Processing)" Command="{x:Bind ViewModel.StartAllCommand}" 
-                            Style="{StaticResource AccentButtonStyle}" Padding="40,8"
-                            Visibility="{x:Bind ViewModel.IsProcessing, Converter={StaticResource InverseBoolToVisibilityConverter}, Mode=OneWay}" />
-                    <Button Content="キャンセル (Cancel)" Command="{x:Bind ViewModel.CancelAllCommand}" 
-                            Padding="40,8" Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                            Visibility="{x:Bind ViewModel.IsProcessing, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+                    <Button Content="クリア (Clear All)" Click="OnClearClick" />
+                    <Button Content="一括処理を開始 (Start Processing)" Style="{StaticResource AccentButtonStyle}" Click="OnProcessClick" Width="200" />
                 </StackPanel>
             </Grid>
         </Border>

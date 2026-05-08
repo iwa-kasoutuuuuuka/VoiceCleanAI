@@ -85,4 +85,34 @@ public sealed partial class MainPage : Page
             await AddFilesFromFolderRecursively(sub);
         }
     }
+
+    private async void OnSelectFilesClick(object sender, RoutedEventArgs e)
+    {
+        var picker = new Windows.Storage.Pickers.FileOpenPicker();
+        picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.List;
+        picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.MusicLibrary;
+        picker.FileTypeFilter.Add(".wav");
+        picker.FileTypeFilter.Add(".mp3");
+        picker.FileTypeFilter.Add(".flac");
+        picker.FileTypeFilter.Add(".m4a");
+
+        IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
+        WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+
+        var files = await picker.PickMultipleFilesAsync();
+        foreach (var file in files)
+        {
+            ViewModel.AddTaskCommand.Execute(file.Path);
+        }
+    }
+
+    private void OnClearClick(object sender, RoutedEventArgs e)
+    {
+        ViewModel.ClearAllCommand.Execute(null);
+    }
+
+    private void OnProcessClick(object sender, RoutedEventArgs e)
+    {
+        ViewModel.StartAllCommand.Execute(null);
+    }
 }

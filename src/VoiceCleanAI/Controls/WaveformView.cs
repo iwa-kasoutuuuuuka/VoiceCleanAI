@@ -1,31 +1,18 @@
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
-using System;
+using Microsoft.UI;
 using System.Collections.Generic;
 
 namespace VoiceCleanAI.Controls;
 
-public class WaveformView : Canvas
+public sealed class WaveformView : Control
 {
-    private readonly Random _random = new Random();
-    private readonly List<Rectangle> _bars = new List<Rectangle>();
-    private DispatcherTimer? _timer;
-    private bool _isAnimating;
-
-    public static readonly DependencyProperty IsActiveProperty =
-        DependencyProperty.Register("IsActive", typeof(bool), typeof(WaveformView), new PropertyMetadata(false, OnIsActiveChanged));
+    private Canvas? _canvas;
 
     public static readonly DependencyProperty WaveformDataProperty =
-        DependencyProperty.Register("WaveformData", typeof(float[]), typeof(WaveformView), new PropertyMetadata(null, OnWaveformDataChanged));
-
-    public bool IsActive
-    {
-        get => (bool)GetValue(IsActiveProperty);
-        set => SetValue(IsActiveProperty, value);
-    }
+        DependencyProperty.Register(nameof(WaveformData), typeof(float[]), typeof(WaveformView), new PropertyMetadata(null, OnWaveformDataChanged));
 
     public float[]? WaveformData
     {
@@ -35,102 +22,61 @@ public class WaveformView : Canvas
 
     public WaveformView()
     {
-        this.Loaded += WaveformView_Loaded;
-        this.SizeChanged += WaveformView_SizeChanged;
+        this.DefaultStyleKey = typeof(WaveformView);
+        this.Loaded += OnLoaded;
+        this.SizeChanged += OnSizeChanged;
     }
 
-    private void WaveformView_Loaded(object sender, RoutedEventArgs e)
+    protected override void OnApplyTemplate()
     {
-        CreateBars();
+        base.OnApplyTemplate();
+        _canvas = GetTemplateChild("PART_Canvas") as Canvas;
+        DrawWaveform();
     }
 
-    private void WaveformView_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        CreateBars();
-    }
-
-    private static void OnIsActiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        var control = (WaveformView)d;
-        if ((bool)e.NewValue) control.StartAnimation();
-        else control.StopAnimation();
-    }
+    private void OnLoaded(object sender, RoutedEventArgs e) => DrawWaveform();
+    private void OnSizeChanged(object sender, SizeChangedEventArgs e) => DrawWaveform();
 
     private static void OnWaveformDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        var control = (WaveformView)d;
-        control.CreateBars();
+        if (d is WaveformView view)
+        {
+            view.DrawWaveform();
+        }
     }
 
-    private void CreateBars()
+    private void DrawWaveform()
     {
-        this.Children.Clear();
-        _bars.Clear();
+        if (_canvas == null || WaveformData == null || WaveformData.Length == 0 || ActualWidth == 0 || ActualHeight == 0)
+            return;
 
-        double width = this.ActualWidth;
-        double height = this.ActualHeight;
-        if (width <= 0 || height <= 0) return;
+        _canvas.Children.Clear();
 
-        float[]? data = WaveformData;
-        int barCount = (data != null && data.Length > 0) ? data.Length : (int)(width / 6);
-        double barWidth = Math.Max(2, (width / barCount) - 2);
+        double width = ActualWidth;
+        double height = ActualHeight;
+        double midY = height / 2;
+        int pointCount = WaveformData.Length;
+        double step = width / pointCount;
 
-        for (int i = 0; i < barCount; i++)
+        var brush = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemAccentColor"]);
+
+        for (int i = 0; i < pointCount; i++)
         {
-            float val = (data != null && i < data.Length) ? data[i] : 0.2f;
+            double value = WaveformData[i];
+            double rectHeight = Math.Max(2, value * height);
             
-            var bar = new Rectangle
+            var rect = new Rectangle
             {
-                Width = barWidth,
-                Height = Math.Max(2, height * val),
-                Fill = (Brush)Application.Current.Resources["AccentFillColorDefaultBrush"],
-                RadiusX = barWidth / 2,
-                RadiusY = barWidth / 2,
-                VerticalAlignment = VerticalAlignment.Center,
-                Opacity = (data != null) ? 1.0 : 0.3
+                Width = Math.Max(1, step - 1),
+                Height = rectHeight,
+                Fill = brush,
+                RadiusX = 1,
+                RadiusY = 1
             };
-            
-            Canvas.SetLeft(bar, i * (barWidth + 2));
-            Canvas.SetTop(bar, (height - bar.Height) / 2);
-            
-            this.Children.Add(bar);
-            _bars.Add(bar);
-        }
-    }
 
-    public void StartAnimation()
-    {
-        if (_isAnimating) return;
-        _isAnimating = true;
-
-        if (_timer == null)
-        {
-            _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
-            _timer.Tick += (s, e) => UpdateBars();
-        }
-        _timer.Start();
-    }
-
-    public void StopAnimation()
-    {
-        _isAnimating = false;
-        _timer?.Stop();
-        CreateBars(); // Reset to static waveform
-    }
-
-    private void UpdateBars()
-    {
-        double height = this.ActualHeight;
-        float[]? data = WaveformData;
-
-        for (int i = 0; i < _bars.Count; i++)
-        {
-            var bar = _bars[i];
-            double baseVal = (data != null && i < data.Length) ? data[i] : 0.2;
-            double targetHeight = height * (baseVal * (0.5 + _random.NextDouble() * 1.0));
-            
-            bar.Height = Math.Max(2, Math.Min(height, targetHeight));
-            Canvas.SetTop(bar, (height - bar.Height) / 2);
+            Canvas.SetLeft(rect, i * step);
+            Canvas.SetTop(rect, midY - (rectHeight / 2));
+            _canvas.Children.Add(rect);
         }
     }
 }

@@ -9,6 +9,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <ResourceDictionary Source="ms-appx:///Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
             
             <conv:StatusToVisibilityConverter x:Key="StatusToVisibilityConverter" />
@@ -17,6 +18,8 @@
             <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <conv:IntToBoolConverter x:Key="IntToBoolConverter" />
             <conv:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
+            <conv:InverseIntToVisibilityConverter x:Key="InverseIntToVisibilityConverter" />
+            <conv:InverseBoolToBoolConverter x:Key="InverseBoolToBoolConverter" />
             <conv:StringFormatConverter x:Key="StringFormatConverter" />
         </ResourceDictionary>
     </Application.Resources>
