@@ -50,33 +50,45 @@ public sealed class WaveformView : Control
         if (_canvas == null || WaveformData == null || WaveformData.Length == 0 || ActualWidth == 0 || ActualHeight == 0)
             return;
 
-        _canvas.Children.Clear();
-
-        double width = ActualWidth;
-        double height = ActualHeight;
-        double midY = height / 2;
-        int pointCount = WaveformData.Length;
-        double step = width / pointCount;
-
-        var brush = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemAccentColor"]);
-
-        for (int i = 0; i < pointCount; i++)
+        // UIスレッドでの実行を保証
+        DispatcherQueue.TryEnqueue(() =>
         {
-            double value = WaveformData[i];
-            double rectHeight = Math.Max(2, value * height);
-            
-            var rect = new Rectangle
-            {
-                Width = Math.Max(1, step - 1),
-                Height = rectHeight,
-                Fill = brush,
-                RadiusX = 1,
-                RadiusY = 1
-            };
+            if (_canvas == null) return;
+            _canvas.Children.Clear();
 
-            Canvas.SetLeft(rect, i * step);
-            Canvas.SetTop(rect, midY - (rectHeight / 2));
-            _canvas.Children.Add(rect);
-        }
+            double width = ActualWidth;
+            double height = ActualHeight;
+            double midY = height / 2;
+            int pointCount = WaveformData.Length;
+            double step = width / pointCount;
+
+            var brush = new SolidColorBrush(Microsoft.UI.Colors.DeepSkyBlue); // デフォルト色を安全に指定
+
+            try {
+                if (Application.Current.Resources.ContainsKey("SystemAccentColor")) {
+                    var color = (Windows.UI.Color)Application.Current.Resources["SystemAccentColor"];
+                    brush = new SolidColorBrush(color);
+                }
+            } catch { /* フォールバック */ }
+
+            for (int i = 0; i < pointCount; i++)
+            {
+                double value = WaveformData[i];
+                double rectHeight = Math.Max(2, value * height);
+                
+                var rect = new Rectangle
+                {
+                    Width = Math.Max(1, step - 1),
+                    Height = rectHeight,
+                    Fill = brush,
+                    RadiusX = 1,
+                    RadiusY = 1
+                };
+
+                Canvas.SetLeft(rect, i * step);
+                Canvas.SetTop(rect, midY - (rectHeight / 2));
+                _canvas.Children.Add(rect);
+            }
+        });
     }
 }

@@ -54,21 +54,26 @@ public class OnnxInferenceService
 
     private void FindFFmpeg()
     {
-        // 1. ポータブル版 (.exe 自体の場所) を探す
-        string? exeDir = Path.GetDirectoryName(Environment.ProcessPath);
-        if (exeDir != null)
+        string[] searchPaths = {
+            Path.GetDirectoryName(Environment.ProcessPath) ?? "",
+            AppDomain.CurrentDomain.BaseDirectory,
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."), // Launcher経由の場合
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app")  // 逆の場合
+        };
+
+        foreach (var dir in searchPaths)
         {
-            string localExeFFmpeg = Path.Combine(exeDir, "ffmpeg.exe");
-            if (File.Exists(localExeFFmpeg))
+            if (string.IsNullOrEmpty(dir)) continue;
+            string path = Path.Combine(dir, "ffmpeg.exe");
+            if (File.Exists(path))
             {
-                _ffmpegPath = localExeFFmpeg;
+                _ffmpegPath = path;
                 return;
             }
         }
-        
-        // 2. 展開先 (BaseDirectory) を探す
-        string localFFmpeg = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg.exe");
-        if (File.Exists(localFFmpeg)) _ffmpegPath = localFFmpeg;
+
+        // 最後はPATH環境変数に期待
+        _ffmpegPath = "ffmpeg.exe";
     }
 
     public async Task ProcessAsync(AudioTask task, CancellationToken ct, IProgress<double> progress)
@@ -191,16 +196,24 @@ public class OnnxInferenceService
             var si = new ProcessStartInfo {
                 FileName = _ffmpegPath,
                 Arguments = $"-i \"{inputPath}\" -f f32le -ac 1 -ar 44100 -y \"{tempRaw}\"",
-                UseShellExecute = false, CreateNoWindow = true
+                UseShellExecute = false, 
+                CreateNoWindow = true,
+                RedirectStandardError = true
             };
             using var p = Process.Start(si);
-            await p!.WaitForExitAsync();
-            if (!File.Exists(tempRaw)) return Array.Empty<float>();
+            string error = await p!.StandardError.ReadToEndAsync();
+            await p.WaitForExitAsync();
+
+            if (p.ExitCode != 0 || !File.Exists(tempRaw))
+            {
+                throw new Exception($"FFmpeg extraction failed (ExitCode: {p.ExitCode}). Error: {error}");
+            }
+
             byte[] bytes = await File.ReadAllBytesAsync(tempRaw);
             float[] data = new float[bytes.Length / 4];
             Buffer.BlockCopy(bytes, 0, data, 0, bytes.Length);
             return data;
-        } catch { return Array.Empty<float>(); }
+        } 
         finally { if (File.Exists(tempRaw)) File.Delete(tempRaw); }
     }
 

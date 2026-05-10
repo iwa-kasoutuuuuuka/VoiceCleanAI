@@ -14,12 +14,25 @@ public class WaveformService
     public WaveformService(LogService logService)
     {
         _logService = logService;
+        
+        string[] searchPaths = {
+            Path.GetDirectoryName(Environment.ProcessPath) ?? "",
+            AppDomain.CurrentDomain.BaseDirectory,
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".."),
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app")
+        };
+
         _ffmpegPath = "ffmpeg.exe";
-        string? exeDir = Path.GetDirectoryName(Environment.ProcessPath);
-        if (exeDir != null && File.Exists(Path.Combine(exeDir, "ffmpeg.exe")))
-            _ffmpegPath = Path.Combine(exeDir, "ffmpeg.exe");
-        else if (File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg.exe")))
-            _ffmpegPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg.exe");
+        foreach (var dir in searchPaths)
+        {
+            if (string.IsNullOrEmpty(dir)) continue;
+            string path = Path.Combine(dir, "ffmpeg.exe");
+            if (File.Exists(path))
+            {
+                _ffmpegPath = path;
+                break;
+            }
+        }
     }
 
     public async Task<float[]> GetWaveformDataAsync(string filePath, int points = 100)

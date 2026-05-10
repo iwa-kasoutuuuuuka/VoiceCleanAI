@@ -29,10 +29,23 @@
         </Grid.RowDefinitions>
 
         <!-- Header Area -->
-        <StackPanel Spacing="8">
-            <TextBlock Text="AI音声クリーニング (AI Voice Cleaning)" Style="{StaticResource TitleTextBlockStyle}" FontWeight="Bold" />
-            <TextBlock Text="録音からノイズを完全に除去し、スタジオ品質の音声へ。 (Remove noise and enhance voice to studio quality.)" Style="{StaticResource BodyTextBlockStyle}" Opacity="0.7" />
-        </StackPanel>
+        <Grid>
+            <StackPanel Spacing="8">
+                <TextBlock Text="AI音声クリーニング (AI Voice Cleaning)" Style="{StaticResource TitleTextBlockStyle}" FontWeight="Bold" />
+                <TextBlock Text="録音からノイズを完全に除去し、スタジオ品質の音声へ。 (Remove noise and enhance voice to studio quality.)" Style="{StaticResource BodyTextBlockStyle}" Opacity="0.7" />
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Spacing="8">
+                <DropDownButton Content="言語 / Language">
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuFlyoutItem Text="日本語 (Japanese)" Click="OnLanguageJaClick" />
+                            <MenuFlyoutItem Text="English" Click="OnLanguageEnClick" />
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                </DropDownButton>
+            </StackPanel>
+        </Grid>
 
         <!-- Main Content Area -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -99,7 +112,7 @@
                     
                     <Border Grid.Column="0" Style="{StaticResource SettingsCardStyle}">
                         <StackPanel Spacing="8">
-                            <TextBlock Text="プリセット (Preset)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7" />
+                            <TextBlock Text="プリセット (Presets)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7" />
                             <ComboBox ItemsSource="{x:Bind ViewModel.Presets}" 
                                       SelectedItem="{x:Bind ViewModel.SelectedPreset, Mode=TwoWay}"
                                       DisplayMemberPath="Name"
@@ -111,7 +124,7 @@
 
                     <Border Grid.Column="1" Style="{StaticResource SettingsCardStyle}">
                         <StackPanel Spacing="8">
-                            <TextBlock Text="出力設定 (Output)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7" />
+                            <TextBlock Text="出力設定 (Output Settings)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7" />
                             <RadioButton Content="元と同じフォルダ (Same as original)" IsChecked="{x:Bind ViewModel.OutputDirectoryMode, Converter={StaticResource IntToBoolConverter}, ConverterParameter=0, Mode=TwoWay}" />
                             <RadioButton Content="専用フォルダ (Custom Folder)" IsChecked="{x:Bind ViewModel.OutputDirectoryMode, Converter={StaticResource IntToBoolConverter}, ConverterParameter=1, Mode=TwoWay}" />
                         </StackPanel>
@@ -130,7 +143,7 @@
                 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
                     <Button Content="クリア (Clear All)" Click="OnClearClick" />
-                    <Button Content="一括処理を開始 (Start Processing)" Style="{StaticResource AccentButtonStyle}" Click="OnProcessClick" Width="200" />
+                    <Button Content="一括処理を開始 (Start Processing)" Style="{StaticResource AccentButtonStyle}" Click="OnProcessClick" Width="220" />
                 </StackPanel>
             </Grid>
         </Border>

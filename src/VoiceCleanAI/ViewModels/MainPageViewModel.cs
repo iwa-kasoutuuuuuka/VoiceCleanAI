@@ -64,6 +64,17 @@ public partial class MainPageViewModel : ObservableObject
     [ObservableProperty]
     public partial string SelectedOutputDirectory { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
 
+    [ObservableProperty]
+    public partial string CurrentLanguage { get; set; } = "ja-JP";
+
+    partial void OnCurrentLanguageChanged(string value)
+    {
+        Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = value;
+        // 注意: 実行中に完全に反映するにはページの再描画や再起動が必要な場合が多いですが、
+        // ここでは設定の保存と反映の準備を行います。
+        _logService.Log($"Language changed to: {value}");
+    }
+
     public ObservableCollection<TaskViewModel> Tasks { get; } = new();
     public ObservableCollection<ProcessingPreset> Presets { get; } = new();
     public ObservableCollection<string> Encoders { get; } = new() { "Auto", "NVENC (NVIDIA)", "QSV (Intel)", "AMF (AMD)", "libx264 (CPU)" };

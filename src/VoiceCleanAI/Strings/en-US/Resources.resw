@@ -3,19 +3,37 @@
   <data name="AppTitle.Text" xml:space="preserve">
     <value>VoiceClean AI</value>
   </data>
-  <data name="DropHint.Text" xml:space="preserve">
-    <value>Drag &amp; drop files here to add</value>
+  <data name="MainTitle.Text" xml:space="preserve">
+    <value>AI Voice Cleaning</value>
   </data>
-  <data name="StartBtn.Content" xml:space="preserve">
-    <value>Start</value>
+  <data name="MainSubtitle.Text" xml:space="preserve">
+    <value>Remove noise and enhance voice to studio quality.</value>
   </data>
-  <data name="CancelBtn.Content" xml:space="preserve">
-    <value>Cancel</value>
+  <data name="DropZoneHint.Text" xml:space="preserve">
+    <value>Drop audio files here</value>
   </data>
-  <data name="ClearBtn.Content" xml:space="preserve">
-    <value>Clear Completed</value>
+  <data name="SelectFiles.Content" xml:space="preserve">
+    <value>Select Files</value>
   </data>
-  <data name="AdvancedToggle.Header" xml:space="preserve">
-    <value>Advanced Settings</value>
+  <data name="ClearAll.Content" xml:space="preserve">
+    <value>Clear All</value>
+  </data>
+  <data name="StartProcessing.Content" xml:space="preserve">
+    <value>Start Processing</value>
+  </data>
+  <data name="ProcessingSettings.Text" xml:space="preserve">
+    <value>Processing Settings</value>
+  </data>
+  <data name="Preset.Text" xml:space="preserve">
+    <value>Preset</value>
+  </data>
+  <data name="OutputSetting.Text" xml:space="preserve">
+    <value>Output Settings</value>
+  </data>
+  <data name="SameFolder.Content" xml:space="preserve">
+    <value>Same as original</value>
+  </data>
+  <data name="CustomFolder.Content" xml:space="preserve">
+    <value>Custom Folder</value>
   </data>
 </root>

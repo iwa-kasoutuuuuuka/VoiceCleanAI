@@ -8,7 +8,7 @@ public partial class App : Application
     public App()
     {
         // ログファイルの準備（絶対パスで確実に記録）
-        string logDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+        string logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VoiceCleanAI", "logs");
         if (!Directory.Exists(logDir)) Directory.CreateDirectory(logDir);
         string startupLog = Path.Combine(logDir, "startup_trace.txt");
         File.AppendAllText(startupLog, $"[{DateTime.Now}] App Constructor started\n");
@@ -32,7 +32,8 @@ public partial class App : Application
 
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        string startupLog = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "startup_trace.txt");
+        string logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VoiceCleanAI", "logs");
+        string startupLog = Path.Combine(logDir, "startup_trace.txt");
         File.AppendAllText(startupLog, $"[{DateTime.Now}] OnLaunched started\n");
 
         try
