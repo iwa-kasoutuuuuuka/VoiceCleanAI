@@ -1,39 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <data name="AppTitle.Text" xml:space="preserve">
-    <value>VoiceClean AI</value>
-  </data>
   <data name="MainTitle.Text" xml:space="preserve">
-    <value>AI音声クリーニング</value>
+    <value>AI音声クリーニング (AI Voice Cleaning)</value>
   </data>
   <data name="MainSubtitle.Text" xml:space="preserve">
-    <value>録音からノイズを完全に除去し、スタジオ品質の音声へ。</value>
+    <value>録音からノイズを完全に除去し、スタジオ品質の音声へ。 (Remove noise and enhance voice to studio quality.)</value>
   </data>
   <data name="DropZoneHint.Text" xml:space="preserve">
-    <value>音声ファイルをここにドラッグ＆ドロップ</value>
+    <value>音声ファイルをここにドラッグ＆ドロップ (Drop audio files here)</value>
   </data>
   <data name="SelectFiles.Content" xml:space="preserve">
-    <value>ファイルを選択</value>
+    <value>ファイルを選択 (Select Files)</value>
   </data>
   <data name="ClearAll.Content" xml:space="preserve">
-    <value>クリア</value>
+    <value>クリア (Clear All)</value>
   </data>
   <data name="StartProcessing.Content" xml:space="preserve">
-    <value>一括処理を開始</value>
+    <value>一括処理を開始 (Start Processing)</value>
   </data>
   <data name="ProcessingSettings.Text" xml:space="preserve">
-    <value>処理設定</value>
+    <value>処理設定 (Processing Settings)</value>
   </data>
   <data name="Preset.Text" xml:space="preserve">
-    <value>プリセット</value>
+    <value>プリセット (Presets)</value>
   </data>
   <data name="OutputSetting.Text" xml:space="preserve">
-    <value>出力設定</value>
+    <value>出力設定 (Output Settings)</value>
   </data>
   <data name="SameFolder.Content" xml:space="preserve">
-    <value>元と同じフォルダ</value>
+    <value>元と同じフォルダ (Same as original)</value>
   </data>
   <data name="CustomFolder.Content" xml:space="preserve">
-    <value>専用フォルダ</value>
+    <value>専用フォルダ (Custom Folder)</value>
   </data>
 </root>

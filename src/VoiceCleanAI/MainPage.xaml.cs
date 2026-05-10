@@ -17,6 +17,17 @@ public sealed partial class MainPage : Page
     {
         InitializeComponent();
         
+        ViewModel.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(MainPageViewModel.CurrentLanguage))
+            {
+                // 言語が切り替わったらページを再読み込みしてリソースを適用する
+                DispatcherQueue.TryEnqueue(() => {
+                    this.Frame.Navigate(typeof(MainPage));
+                });
+            }
+        };
+
         ViewModel.RequestDownloadConfirmation = async () =>
         {
             var dialog = new ContentDialog

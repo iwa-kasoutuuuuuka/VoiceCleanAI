@@ -31,8 +31,8 @@
         <!-- Header Area -->
         <Grid>
             <StackPanel Spacing="8">
-                <TextBlock Text="AI音声クリーニング (AI Voice Cleaning)" Style="{StaticResource TitleTextBlockStyle}" FontWeight="Bold" />
-                <TextBlock Text="録音からノイズを完全に除去し、スタジオ品質の音声へ。 (Remove noise and enhance voice to studio quality.)" Style="{StaticResource BodyTextBlockStyle}" Opacity="0.7" />
+                <TextBlock x:Uid="MainTitle" Text="AI音声クリーニング (AI Voice Cleaning)" Style="{StaticResource TitleTextBlockStyle}" FontWeight="Bold" />
+                <TextBlock x:Uid="MainSubtitle" Text="録音からノイズを完全に除去し、スタジオ品質の音声へ。 (Remove noise and enhance voice to studio quality.)" Style="{StaticResource BodyTextBlockStyle}" Opacity="0.7" />
             </StackPanel>
             
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Spacing="8">
@@ -63,8 +63,8 @@
                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12"
                                     Visibility="{x:Bind ViewModel.Tasks.Count, Mode=OneWay, Converter={StaticResource IntToVisibilityConverter}, ConverterParameter=0}">
                             <FontIcon Glyph="&#xE8E5;" FontSize="48" Foreground="{ThemeResource AccentFillColorDefaultBrush}" />
-                            <TextBlock Text="音声ファイルをここにドラッグ＆ドロップ (Drop audio files here)" HorizontalAlignment="Center" />
-                            <Button Content="ファイルを選択 (Select Files)" HorizontalAlignment="Center" Click="OnSelectFilesClick" Style="{StaticResource AccentButtonStyle}" />
+                            <TextBlock x:Uid="DropZoneHint" Text="音声ファイルをここにドラッグ＆ドロップ (Drop audio files here)" HorizontalAlignment="Center" />
+                            <Button x:Uid="SelectFiles" Content="ファイルを選択 (Select Files)" HorizontalAlignment="Center" Click="OnSelectFilesClick" Style="{StaticResource AccentButtonStyle}" />
                         </StackPanel>
 
                         <!-- Task List Area -->
@@ -103,7 +103,7 @@
                 </Border>
 
                 <!-- Processing Options -->
-                <TextBlock Text="処理設定 (Processing Settings)" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                <TextBlock x:Uid="ProcessingSettings" Text="処理設定 (Processing Settings)" Style="{StaticResource BodyStrongTextBlockStyle}" />
                 <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -112,7 +112,7 @@
                     
                     <Border Grid.Column="0" Style="{StaticResource SettingsCardStyle}">
                         <StackPanel Spacing="8">
-                            <TextBlock Text="プリセット (Presets)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7" />
+                            <TextBlock x:Uid="Preset" Text="プリセット (Presets)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7" />
                             <ComboBox ItemsSource="{x:Bind ViewModel.Presets}" 
                                       SelectedItem="{x:Bind ViewModel.SelectedPreset, Mode=TwoWay}"
                                       DisplayMemberPath="Name"
@@ -124,9 +124,9 @@
 
                     <Border Grid.Column="1" Style="{StaticResource SettingsCardStyle}">
                         <StackPanel Spacing="8">
-                            <TextBlock Text="出力設定 (Output Settings)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7" />
-                            <RadioButton Content="元と同じフォルダ (Same as original)" IsChecked="{x:Bind ViewModel.OutputDirectoryMode, Converter={StaticResource IntToBoolConverter}, ConverterParameter=0, Mode=TwoWay}" />
-                            <RadioButton Content="専用フォルダ (Custom Folder)" IsChecked="{x:Bind ViewModel.OutputDirectoryMode, Converter={StaticResource IntToBoolConverter}, ConverterParameter=1, Mode=TwoWay}" />
+                            <TextBlock x:Uid="OutputSetting" Text="出力設定 (Output Settings)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7" />
+                            <RadioButton x:Uid="SameFolder" Content="元と同じフォルダ (Same as original)" IsChecked="{x:Bind ViewModel.OutputDirectoryMode, Converter={StaticResource IntToBoolConverter}, ConverterParameter=0, Mode=TwoWay}" />
+                            <RadioButton x:Uid="CustomFolder" Content="専用フォルダ (Custom Folder)" IsChecked="{x:Bind ViewModel.OutputDirectoryMode, Converter={StaticResource IntToBoolConverter}, ConverterParameter=1, Mode=TwoWay}" />
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -142,8 +142,8 @@
                 </StackPanel>
                 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
-                    <Button Content="クリア (Clear All)" Click="OnClearClick" />
-                    <Button Content="一括処理を開始 (Start Processing)" Style="{StaticResource AccentButtonStyle}" Click="OnProcessClick" Width="220" />
+                    <Button x:Uid="ClearAll" Content="クリア (Clear All)" Click="OnClearClick" />
+                    <Button x:Uid="StartProcessing" Content="一括処理を開始 (Start Processing)" Style="{StaticResource AccentButtonStyle}" Click="OnProcessClick" Width="220" />
                 </StackPanel>
             </Grid>
         </Border>
