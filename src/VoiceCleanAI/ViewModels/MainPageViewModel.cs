@@ -70,9 +70,45 @@ public partial class MainPageViewModel : ObservableObject
     partial void OnCurrentLanguageChanged(string value)
     {
         Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = value;
-        // 注意: 実行中に完全に反映するにはページの再描画や再起動が必要な場合が多いですが、
-        // ここでは設定の保存と反映の準備を行います。
+        
+        // プリセットを再読み込みして言語を反映
+        LoadPresets();
+
+        // MainWindowをリロードしてサイドバーなどのリソースを反映
+        MainWindow.Instance?.Reload();
+
         _logService.Log($"Language changed to: {value}");
+    }
+
+    private void LoadPresets()
+    {
+        var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
+        Presets.Clear();
+        
+        // 基本的なプリセットを取得
+        var defaults = ProcessingPreset.GetDefaultPresets();
+        foreach (var p in defaults)
+        {
+            // 名前と説明をリソースがあれば上書き
+            string key = p.Name.Replace(" ", "").Replace("(", "").Replace(")", "");
+            // ※ここでは簡易的に元の名前に基づくキー生成を試みるか、
+            // 固定のキーマップを使用するのが安全です。
+            
+            // 安全な方法として固定の翻訳ロジックを導入
+            if (p.Name.Contains("AI Auto")) {
+                p.Name = resourceLoader.GetString("PresetAuto");
+                p.Description = resourceLoader.GetString("PresetAutoDesc");
+            }
+            else if (p.Name.Contains("Podcast")) {
+                p.Name = resourceLoader.GetString("PresetStudio");
+                p.Description = resourceLoader.GetString("PresetStudioDesc");
+            }
+            // 他のプリセットも同様に...
+            
+            Presets.Add(p);
+        }
+        
+        if (Presets.Count > 0) SelectedPreset = Presets[0];
     }
 
     public ObservableCollection<TaskViewModel> Tasks { get; } = new();
@@ -95,8 +131,7 @@ public partial class MainPageViewModel : ObservableObject
         _inferenceManager.ProcessingStateChanged += (s, processing) => IsProcessing = processing;
         _inferenceManager.GlobalProgressChanged += (s, progress) => GlobalProgress = progress;
 
-        foreach (var p in ProcessingPreset.GetDefaultPresets()) Presets.Add(p);
-        SelectedPreset = Presets[0];
+        LoadPresets();
 
         _ = RunDiagnosticsAsync();
     }

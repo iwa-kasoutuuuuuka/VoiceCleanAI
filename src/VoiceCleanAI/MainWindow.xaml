@@ -13,26 +13,27 @@
         <MicaBackdrop Kind="Base" />
     </Window.SystemBackdrop>
 
-    <Grid>
+    <Grid x:Name="RootElement" x:FieldModifier="public">
         <NavigationView x:Name="NavView" 
                         PaneDisplayMode="Left"
                         IsSettingsVisible="True"
+                        x:Uid="NavView"
                         Header="ホーム (Home)"
                         SelectionChanged="NavView_SelectionChanged">
             
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="ホーム (Home)" Tag="Home">
+                <NavigationViewItem x:Uid="NavHome" Content="ホーム (Home)" Tag="Home">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE80F;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="履歴 (History)" Tag="History">
+                <NavigationViewItem x:Uid="NavHistory" Content="履歴 (History)" Tag="History">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE81C;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItemSeparator />
-                <NavigationViewItem Content="ハードウェア (Hardware)" Tag="Hardware">
+                <NavigationViewItem x:Uid="NavHardware" Content="ハードウェア (Hardware)" Tag="Hardware">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE963;" />
                     </NavigationViewItem.Icon>

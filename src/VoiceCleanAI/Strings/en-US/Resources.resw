@@ -36,4 +36,40 @@
   <data name="CustomFolder.Content" xml:space="preserve">
     <value>Custom Folder</value>
   </data>
+  <data name="NavHome.Content" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="NavHistory.Content" xml:space="preserve">
+    <value>History</value>
+  </data>
+  <data name="NavHardware.Content" xml:space="preserve">
+    <value>Hardware</value>
+  </data>
+  <data name="NavSettings.Content" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="HeaderHome" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="PresetAuto" xml:space="preserve">
+    <value>AI Auto</value>
+  </data>
+  <data name="PresetAutoDesc" xml:space="preserve">
+    <value>Auto optimization by AI</value>
+  </data>
+  <data name="PresetStudio" xml:space="preserve">
+    <value>Studio Quality</value>
+  </data>
+  <data name="PresetStudioDesc" xml:space="preserve">
+    <value>For narration and high quality recording</value>
+  </data>
+  <data name="SettingsTitle.Text" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="LanguageSettingTitle.Text" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="ThemeSettingTitle.Text" xml:space="preserve">
+    <value>App Theme</value>
+  </data>
 </root>

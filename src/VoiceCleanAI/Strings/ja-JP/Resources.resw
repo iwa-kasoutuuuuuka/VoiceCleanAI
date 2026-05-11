@@ -33,4 +33,40 @@
   <data name="CustomFolder.Content" xml:space="preserve">
     <value>専用フォルダ (Custom Folder)</value>
   </data>
+  <data name="NavHome.Content" xml:space="preserve">
+    <value>ホーム (Home)</value>
+  </data>
+  <data name="NavHistory.Content" xml:space="preserve">
+    <value>履歴 (History)</value>
+  </data>
+  <data name="NavHardware.Content" xml:space="preserve">
+    <value>ハードウェア (Hardware)</value>
+  </data>
+  <data name="NavSettings.Content" xml:space="preserve">
+    <value>設定 (Settings)</value>
+  </data>
+  <data name="HeaderHome" xml:space="preserve">
+    <value>ホーム (Home)</value>
+  </data>
+  <data name="PresetAuto" xml:space="preserve">
+    <value>AI Auto (自動最適化)</value>
+  </data>
+  <data name="PresetAutoDesc" xml:space="preserve">
+    <value>AIによる自動最適化 (Auto optimization by AI)</value>
+  </data>
+  <data name="PresetStudio" xml:space="preserve">
+    <value>スタジオ品質 (Studio Quality)</value>
+  </data>
+  <data name="PresetStudioDesc" xml:space="preserve">
+    <value>ポッドキャスト・ナレーション向け（高品質） (For narration, high quality)</value>
+  </data>
+  <data name="SettingsTitle.Text" xml:space="preserve">
+    <value>設定 (Settings)</value>
+  </data>
+  <data name="LanguageSettingTitle.Text" xml:space="preserve">
+    <value>言語 (Language)</value>
+  </data>
+  <data name="ThemeSettingTitle.Text" xml:space="preserve">
+    <value>外観モード (App Theme)</value>
+  </data>
 </root>

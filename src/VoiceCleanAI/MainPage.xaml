@@ -34,17 +34,6 @@
                 <TextBlock x:Uid="MainTitle" Text="AI音声クリーニング (AI Voice Cleaning)" Style="{StaticResource TitleTextBlockStyle}" FontWeight="Bold" />
                 <TextBlock x:Uid="MainSubtitle" Text="録音からノイズを完全に除去し、スタジオ品質の音声へ。 (Remove noise and enhance voice to studio quality.)" Style="{StaticResource BodyTextBlockStyle}" Opacity="0.7" />
             </StackPanel>
-            
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Spacing="8">
-                <DropDownButton Content="言語 / Language">
-                    <DropDownButton.Flyout>
-                        <MenuFlyout Placement="Bottom">
-                            <MenuFlyoutItem Text="日本語 (Japanese)" Click="OnLanguageJaClick" />
-                            <MenuFlyoutItem Text="English" Click="OnLanguageEnClick" />
-                        </MenuFlyout>
-                    </DropDownButton.Flyout>
-                </DropDownButton>
-            </StackPanel>
         </Grid>
 
         <!-- Main Content Area -->

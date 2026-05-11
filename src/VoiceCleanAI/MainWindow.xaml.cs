@@ -17,8 +17,22 @@ public sealed partial class MainWindow : Window
         RootFrame.Navigate(typeof(MainPage));
     }
 
+    public void Reload()
+    {
+        InitializeComponent();
+        // 言語切り替え後はメインページを表示
+        RootFrame.Navigate(typeof(MainPage));
+    }
+
     private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
+        if (args.IsSettingsSelected)
+        {
+            sender.Header = "設定 (Settings)";
+            RootFrame.Navigate(typeof(SettingsPage));
+            return;
+        }
+
         if (args.SelectedItemContainer != null)
         {
             string tag = args.SelectedItemContainer.Tag.ToString() ?? "";

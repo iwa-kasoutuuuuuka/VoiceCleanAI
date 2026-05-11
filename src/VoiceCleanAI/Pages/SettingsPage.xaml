@@ -1,0 +1,44 @@
+<Page
+    x:Class="VoiceCleanAI.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:VoiceCleanAI.ViewModels"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <Grid Padding="24">
+        <StackPanel Spacing="24" MaxWidth="600" HorizontalAlignment="Left">
+            <TextBlock x:Uid="SettingsTitle" Text="設定 (Settings)" Style="{StaticResource TitleTextBlockStyle}" FontWeight="Bold" />
+
+            <!-- Language Section -->
+            <StackPanel Spacing="8">
+                <TextBlock x:Uid="LanguageSettingTitle" Text="言語 (Language)" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                <ComboBox x:Name="LanguageComboBox" HorizontalAlignment="Stretch" SelectionChanged="LanguageComboBox_SelectionChanged">
+                    <ComboBoxItem Content="日本語 (Japanese)" Tag="ja-JP" />
+                    <ComboBoxItem Content="English" Tag="en-US" />
+                </ComboBox>
+            </StackPanel>
+
+            <!-- Theme Section -->
+            <StackPanel Spacing="8">
+                <TextBlock x:Uid="ThemeSettingTitle" Text="外観モード (App Theme)" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                <RadioButtons x:Name="ThemeRadioButtons" SelectionChanged="ThemeRadioButtons_SelectionChanged">
+                    <RadioButton Content="システム設定に従う (System Default)" Tag="Default" />
+                    <RadioButton Content="ライトモード (Light)" Tag="Light" />
+                    <RadioButton Content="ダークモード (Dark)" Tag="Dark" />
+                </RadioButtons>
+            </StackPanel>
+
+            <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0" Margin="0,12" />
+
+            <!-- About Section -->
+            <StackPanel Spacing="4">
+                <TextBlock Text="VoiceClean AI" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                <TextBlock Text="Version 1.0.0" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7" />
+                <TextBlock Text="Created by Antigravity (Advanced Agentic Coding AI)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.5" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Page>

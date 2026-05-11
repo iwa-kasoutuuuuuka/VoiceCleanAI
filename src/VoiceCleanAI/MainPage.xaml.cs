@@ -126,14 +126,4 @@ public sealed partial class MainPage : Page
     {
         ViewModel.StartAllCommand.Execute(null);
     }
-
-    private void OnLanguageJaClick(object sender, RoutedEventArgs e)
-    {
-        ViewModel.CurrentLanguage = "ja-JP";
-    }
-
-    private void OnLanguageEnClick(object sender, RoutedEventArgs e)
-    {
-        ViewModel.CurrentLanguage = "en-US";
-    }
 }
