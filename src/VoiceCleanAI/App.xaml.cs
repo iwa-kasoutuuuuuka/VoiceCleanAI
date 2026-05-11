@@ -51,5 +51,9 @@ public partial class App : Application
 
     public static Window? MainWindow => ((App)Application.Current).m_window;
     public static VoiceCleanAI.ViewModels.MainPageViewModel ViewModel { get; } = new();
+    
+    // 設定の保持（本来はローカル設定に保存すべきですが、現在はメモリ上で保持）
+    public static ElementTheme CurrentTheme { get; set; } = ElementTheme.Default;
+    
     private Window? m_window;
 }

@@ -29,7 +29,7 @@ public sealed partial class SettingsPage : Page
         }
 
         // テーマ設定の反映
-        var currentTheme = MainWindow.Instance?.RootElement.RequestedTheme ?? ElementTheme.Default;
+        var currentTheme = App.CurrentTheme;
         foreach (RadioButton rb in ThemeRadioButtons.Items)
         {
             if (rb.Tag.ToString() == currentTheme.ToString())
@@ -61,9 +61,10 @@ public sealed partial class SettingsPage : Page
             string themeStr = rb.Tag.ToString()!;
             if (Enum.TryParse(themeStr, out ElementTheme theme))
             {
-                if (App.MainWindow is MainWindow window)
+                App.CurrentTheme = theme;
+                if (MainWindow.Instance != null)
                 {
-                    window.RootElement.RequestedTheme = theme;
+                    MainWindow.Instance.RootElement.RequestedTheme = theme;
                 }
             }
         }

@@ -14,14 +14,24 @@ public sealed partial class MainWindow : Window
     {
         Instance = this;
         InitializeComponent();
+        ApplyTheme();
         RootFrame.Navigate(typeof(MainPage));
     }
 
     public void Reload()
     {
         InitializeComponent();
+        ApplyTheme();
         // 言語切り替え後はメインページを表示
         RootFrame.Navigate(typeof(MainPage));
+    }
+
+    private void ApplyTheme()
+    {
+        if (RootElement != null)
+        {
+            RootElement.RequestedTheme = App.CurrentTheme;
+        }
     }
 
     private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
