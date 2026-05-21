@@ -59,7 +59,21 @@ public partial class MainPageViewModel : ObservableObject
     public partial bool AutoOpenFolder { get; set; } = true;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsOutputOriginalDirectory))]
+    [NotifyPropertyChangedFor(nameof(IsOutputCustomDirectory))]
     public partial int OutputDirectoryMode { get; set; } = 0; // 0: Original, 1: Specific
+
+    public bool IsOutputOriginalDirectory
+    {
+        get => OutputDirectoryMode == 0;
+        set { if (value) OutputDirectoryMode = 0; }
+    }
+
+    public bool IsOutputCustomDirectory
+    {
+        get => OutputDirectoryMode == 1;
+        set { if (value) OutputDirectoryMode = 1; }
+    }
 
     [ObservableProperty]
     public partial string SelectedOutputDirectory { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);

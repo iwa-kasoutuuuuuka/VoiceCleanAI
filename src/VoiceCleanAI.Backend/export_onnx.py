@@ -8,8 +8,8 @@ def export():
     enhancer = load_enhancer(None)
     denoiser = load_denoiser(None)
     
-    # Dummy input
-    dummy_audio = torch.randn(1, 1, 44100)
+    # Dummy input (batch, samples) - resemble-enhance expects 2D or 1D
+    dummy_audio = torch.randn(1, 44100)
     
     # Export Enhancer
     print("Exporting Enhancer to ONNX...")
@@ -19,7 +19,7 @@ def export():
         "enhancer.onnx",
         input_names=['input', 'sr'],
         output_names=['output'],
-        dynamic_axes={'input': {2: 'samples'}, 'output': {2: 'samples'}},
+        dynamic_axes={'input': {1: 'samples'}, 'output': {1: 'samples'}},
         opset_version=17
     )
     
@@ -31,7 +31,7 @@ def export():
         "denoiser.onnx",
         input_names=['input', 'sr'],
         output_names=['output'],
-        dynamic_axes={'input': {2: 'samples'}, 'output': {2: 'samples'}},
+        dynamic_axes={'input': {1: 'samples'}, 'output': {1: 'samples'}},
         opset_version=17
     )
 

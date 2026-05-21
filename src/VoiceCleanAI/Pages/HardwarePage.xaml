@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:VoiceCleanAI.Core.Models"
     mc:Ignorable="d">
 
     <StackPanel Spacing="24" Padding="0,20">
@@ -21,7 +22,7 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Glyph="&#xE963;" FontSize="48" Foreground="{ThemeResource AccentFillColorDefaultBrush}" Margin="0,0,24,0" />
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                        <TextBlock Text="{x:Bind ViewModel.CurrentHardware.GpuName, Mode=OneWay}" Style="{StaticResource BodyStrongTextBlockStyle}" FontSize="20" />
+                        <TextBlock Text="{x:Bind ViewModel.CurrentHardware.GpuName, Mode=OneWay, FallbackValue='Detecting...'}" Style="{StaticResource BodyStrongTextBlockStyle}" FontSize="20" />
                         <TextBlock Text="{x:Bind ViewModel.HardwareStatusText, Mode=OneWay}" Opacity="0.7" />
                     </StackPanel>
                 </Grid>
@@ -42,12 +43,12 @@
                     
                     <StackPanel Grid.Column="1" Spacing="4">
                         <TextBlock Text="VRAM (GB)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6" />
-                        <TextBlock Text="{x:Bind ViewModel.CurrentHardware.VramGB, Mode=OneWay}" FontWeight="SemiBold" />
+                        <TextBlock Text="{x:Bind ViewModel.CurrentHardware.VramText, Mode=OneWay, FallbackValue='0.0 GB'}" FontWeight="SemiBold" />
                     </StackPanel>
                     
                     <StackPanel Grid.Column="2" Spacing="4">
                         <TextBlock Text="CUDA 加速 (CUDA)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6" />
-                        <TextBlock Text="{x:Bind ViewModel.CurrentHardware.HasCuda, Mode=OneWay}" FontWeight="SemiBold" />
+                        <TextBlock Text="{x:Bind ViewModel.CurrentHardware.HasCudaText, Mode=OneWay, FallbackValue='False'}" FontWeight="SemiBold" />
                     </StackPanel>
                 </Grid>
             </StackPanel>

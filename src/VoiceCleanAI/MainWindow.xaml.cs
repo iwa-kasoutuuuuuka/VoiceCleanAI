@@ -20,7 +20,8 @@ public sealed partial class MainWindow : Window
 
     public void Reload()
     {
-        InitializeComponent();
+        // InitializeComponent() の再呼び出しは WinUI 3 では不正な動作やクラッシュの原因となります。
+        // テーマの再適用と、ページの再ナビゲーションのみを行います。
         ApplyTheme();
         // 言語切り替え後はメインページを表示
         RootFrame.Navigate(typeof(MainPage));

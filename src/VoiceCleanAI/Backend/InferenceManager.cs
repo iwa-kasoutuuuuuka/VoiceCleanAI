@@ -131,6 +131,9 @@ public class InferenceManager
                 }
                 catch { /* 無視 */ }
             }
+
+            _cts?.Dispose();
+            _cts = null;
         }
     }
 

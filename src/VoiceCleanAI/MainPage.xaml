@@ -114,8 +114,8 @@
                     <Border Grid.Column="1" Style="{StaticResource SettingsCardStyle}">
                         <StackPanel Spacing="8">
                             <TextBlock x:Uid="OutputSetting" Text="出力設定 (Output Settings)" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7" />
-                            <RadioButton x:Uid="SameFolder" Content="元と同じフォルダ (Same as original)" IsChecked="{x:Bind ViewModel.OutputDirectoryMode, Converter={StaticResource IntToBoolConverter}, ConverterParameter=0, Mode=TwoWay}" />
-                            <RadioButton x:Uid="CustomFolder" Content="専用フォルダ (Custom Folder)" IsChecked="{x:Bind ViewModel.OutputDirectoryMode, Converter={StaticResource IntToBoolConverter}, ConverterParameter=1, Mode=TwoWay}" />
+                            <RadioButton x:Uid="SameFolder" Content="元と同じフォルダ (Same as original)" IsChecked="{x:Bind ViewModel.IsOutputOriginalDirectory, Mode=TwoWay}" />
+                            <RadioButton x:Uid="CustomFolder" Content="専用フォルダ (Custom Folder)" IsChecked="{x:Bind ViewModel.IsOutputCustomDirectory, Mode=TwoWay}" />
                         </StackPanel>
                     </Border>
                 </Grid>

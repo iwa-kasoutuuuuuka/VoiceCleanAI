@@ -9,7 +9,7 @@ using VoiceCleanAI.Services;
 
 namespace VoiceCleanAI.Backend;
 
-public class OnnxInferenceService
+public class OnnxInferenceService : IDisposable
 {
     private readonly string _modelPath;
     private readonly LogService _logService;
@@ -83,7 +83,8 @@ public class OnnxInferenceService
             await InitializeAsync();
             _logService.Log($"ONNX Processing started: {task.FileName}");
 
-            float[] audioData = await ExtractAudioAsync(task.InputFilePath);
+            ct.ThrowIfCancellationRequested();
+            float[] audioData = await ExtractAudioAsync(task.InputFilePath, ct);
             if (audioData.Length == 0) throw new Exception("Audio extraction failed.");
             progress.Report(0.1);
 
@@ -128,6 +129,7 @@ public class OnnxInferenceService
             }
 
             progress.Report(0.3);
+            ct.ThrowIfCancellationRequested();
             
             // --- Step 1: Denoiser ---
             var denoiserInputs = new List<NamedOnnxValue> {
@@ -140,6 +142,7 @@ public class OnnxInferenceService
             float[] denoisedMag = denoiserResults.First().AsTensor<float>().ToArray();
             _logService.Log("Denoiser step completed.");
             progress.Report(0.6);
+            ct.ThrowIfCancellationRequested();
 
             // --- Step 2: Enhancer (Optional) ---
             float[] finalMag = denoisedMag;
@@ -156,6 +159,7 @@ public class OnnxInferenceService
                 _logService.Log("Enhancer step completed.");
             }
             progress.Report(0.8);
+            ct.ThrowIfCancellationRequested();
 
             // Reconstruction
             var processedSpec = new List<(float[], float[])>();
@@ -178,7 +182,7 @@ public class OnnxInferenceService
             float[] finalAudio = new float[finalLen];
             Array.Copy(processed, finalAudio, finalLen);
 
-            await SaveAudioAsync(finalAudio, task.OutputFilePath, task.InputFilePath);
+            await SaveAudioAsync(finalAudio, task.OutputFilePath, task.InputFilePath, ct);
             _logService.Log("Success!");
             progress.Report(1.0);
         }
@@ -189,9 +193,10 @@ public class OnnxInferenceService
         }
     }
 
-    private async Task<float[]> ExtractAudioAsync(string inputPath)
+    private async Task<float[]> ExtractAudioAsync(string inputPath, CancellationToken ct)
     {
         string tempRaw = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".raw");
+        Process? p = null;
         try {
             var si = new ProcessStartInfo {
                 FileName = _ffmpegPath,
@@ -200,30 +205,42 @@ public class OnnxInferenceService
                 CreateNoWindow = true,
                 RedirectStandardError = true
             };
-            using var p = Process.Start(si);
-            string error = await p!.StandardError.ReadToEndAsync();
-            await p.WaitForExitAsync();
+            p = Process.Start(si);
+            if (p == null) throw new Exception("FFmpegプロセスの起動に失敗しました。 (Failed to start FFmpeg.)");
+
+            using var registration = ct.Register(() => {
+                try { if (!p.HasExited) p.Kill(); } catch { }
+            });
+
+            string error = await p.StandardError.ReadToEndAsync(ct);
+            await p.WaitForExitAsync(ct);
+
+            ct.ThrowIfCancellationRequested();
 
             if (p.ExitCode != 0 || !File.Exists(tempRaw))
             {
                 throw new Exception($"FFmpeg extraction failed (ExitCode: {p.ExitCode}). Error: {error}");
             }
 
-            byte[] bytes = await File.ReadAllBytesAsync(tempRaw);
+            byte[] bytes = await File.ReadAllBytesAsync(tempRaw, ct);
             float[] data = new float[bytes.Length / 4];
             Buffer.BlockCopy(bytes, 0, data, 0, bytes.Length);
             return data;
         } 
-        finally { if (File.Exists(tempRaw)) File.Delete(tempRaw); }
+        finally { 
+            p?.Dispose();
+            if (File.Exists(tempRaw)) File.Delete(tempRaw); 
+        }
     }
 
-    private async Task SaveAudioAsync(float[] data, string path, string? inputVideoPath = null)
+    private async Task SaveAudioAsync(float[] data, string path, string? inputVideoPath, CancellationToken ct)
     {
         string tempRaw = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".raw");
         byte[] bytes = new byte[data.Length * 4];
         Buffer.BlockCopy(data, 0, bytes, 0, bytes.Length);
-        await File.WriteAllBytesAsync(tempRaw, bytes);
+        await File.WriteAllBytesAsync(tempRaw, bytes, ct);
         
+        Process? p = null;
         try {
             string args;
             bool isVideo = !string.IsNullOrEmpty(inputVideoPath) && 
@@ -248,10 +265,37 @@ public class OnnxInferenceService
             var si = new ProcessStartInfo {
                 FileName = _ffmpegPath,
                 Arguments = args,
-                UseShellExecute = false, CreateNoWindow = true
+                UseShellExecute = false, 
+                CreateNoWindow = true,
+                RedirectStandardError = true
             };
-            using var p = Process.Start(si);
-            await p!.WaitForExitAsync();
-        } finally { if (File.Exists(tempRaw)) File.Delete(tempRaw); }
+            p = Process.Start(si);
+            if (p == null) throw new Exception("FFmpegプロセスの起動に失敗しました。 (Failed to start FFmpeg.)");
+
+            using var registration = ct.Register(() => {
+                try { if (!p.HasExited) p.Kill(); } catch { }
+            });
+
+            string error = await p.StandardError.ReadToEndAsync(ct);
+            await p.WaitForExitAsync(ct);
+
+            ct.ThrowIfCancellationRequested();
+
+            if (p.ExitCode != 0)
+            {
+                throw new Exception($"FFmpeg save failed (ExitCode: {p.ExitCode}). Error: {error}");
+            }
+        } finally { 
+            p?.Dispose();
+            if (File.Exists(tempRaw)) File.Delete(tempRaw); 
+        }
+    }
+
+    public void Dispose()
+    {
+        _denoiserSession?.Dispose();
+        _denoiserSession = null;
+        _enhancerSession?.Dispose();
+        _enhancerSession = null;
     }
 }

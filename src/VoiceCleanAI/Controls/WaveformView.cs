@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 using Microsoft.UI;
 using System.Collections.Generic;
+using System;
 
 namespace VoiceCleanAI.Controls;
 
@@ -62,11 +63,11 @@ public sealed class WaveformView : Control
             int pointCount = WaveformData.Length;
             double step = width / pointCount;
 
-            var brush = new SolidColorBrush(Microsoft.UI.Colors.DeepSkyBlue); // デフォルト色を安全に指定
-
+            var brush = new SolidColorBrush(Microsoft.UI.Colors.DeepSkyBlue); 
+            
             try {
-                if (Application.Current.Resources.ContainsKey("SystemAccentColor")) {
-                    var color = (Windows.UI.Color)Application.Current.Resources["SystemAccentColor"];
+                // WinUI 3でアクセントカラーを安全に取得
+                if (Application.Current.Resources.TryGetValue("SystemAccentColor", out object? accentColorObj) && accentColorObj is Windows.UI.Color color) {
                     brush = new SolidColorBrush(color);
                 }
             } catch { /* フォールバック */ }

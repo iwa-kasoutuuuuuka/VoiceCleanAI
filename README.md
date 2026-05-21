@@ -40,9 +40,12 @@ Combining the latest AI models (Resemble Enhance) with WinUI 3, it provides prof
    ```
 4. プロジェクトをビルドして実行します。(Build and run the project.)
 
-## 📖 設計指針 / Design Principles
+## 📖 設計指針とデバッグ報告 / Design Principles & Debug Report
 本プロジェクトの設計思想や詳細な要件については、[docs/skills/](docs/skills/) 内のドキュメントを参照してください。
+また、今回のUI不具合および音声処理バックエンドの信頼性向上に関するデバッグ・修正完了レポートについては、[docs/walkthrough.md](docs/walkthrough.md) を参照してください。
+
 Refer to the documents in [docs/skills/](docs/skills/) for design philosophy and detailed requirements.
+Also, refer to [docs/walkthrough.md](docs/walkthrough.md) for the debug and bug-fixing report regarding UI compile errors and backend stability improvements.
 
 ## 📄 ライセンス / License
 このプロジェクトは MIT ライセンスの下で公開されています。詳細は [LICENSE](LICENSE) を参照してください。
